@@ -12,7 +12,6 @@ from callbacks import register_callbacks
 from components.dashboard import *
 from components.tabs import *
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Main DASH
 # ----------------------------------------------------------------------------------------------------------------------
@@ -49,17 +48,26 @@ app.layout = dbc.Container(
                                 ), width=2
                         ),
                 # Title
-                dbc.Col(html.H1(children='Udjat Projet Team 40', style={'textAlign': 'center'}
-                                ), width=6
+                dbc.Col(html.Div([html.H1(children='Udjat', style={'textAlign': 'center'}),
+                                  html.H4(children='"Mindfulness of our World"', style={'textAlign': 'center'}
+                                          )], id="Title",
+                                 ), width=5
                         ),
                 # Tabs
                 dbc.Col(html.Div([build_tabs()],
                                  className="one-third column",
-                                 id="button",
-                                 ), width=4
+                                 id="main_tabs",
+                                 style={'textAlign': 'right'}
+                                 ), width=5
                         ),
             ],
-            id='header', align="center", style={'height': '15%', 'margin-bottom': '40px'}
+            id='header', align="center", style={'height': '15%', 'margin-bottom': '20px'}
+        ),
+        # Line
+        dbc.Row([
+            html.Hr(style={'borderWidth': "5vh", "width": "100%", "borderColor": "#000000", "opacity": "unset"}),
+        ],
+            id='line_header', align="center", style={'margin-bottom': '20px'}
         ),
         # Content
         html.Div(
@@ -68,7 +76,7 @@ app.layout = dbc.Container(
         ),
     ],
     id='mainContainer',
-    style={'height': '95vh', "display": "flex", "flex-direction": "column"}
+    style={'height': '100vh'}  # "display": "flex", "flex-direction": "column"
 )
 
 # Callback
@@ -78,5 +86,5 @@ register_callbacks(app, df_disaster)
 # ----------------------------------------------------------------------------------------------------------------------
 # Running the main code
 if __name__ == '__main__':
-    app.run_server(debug=False, host='0.0.0.0', port=8050)
-    # app.run_server(debug=True, port=8050)
+    # app.run_server(debug=False, host='0.0.0.0', port=8050)
+    app.run_server(debug=True, port=8050)

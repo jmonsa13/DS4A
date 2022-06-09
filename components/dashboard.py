@@ -52,9 +52,7 @@ markdown_text = '''
 def dashboard_gui():
     return html.Div(
         [
-            html.Br(),
-
-            html.H2(children='Disaster Analysis.'),
+            html.H2(children='Disaster Analysis.', style={"margin-left": "5px", 'margin-bottom': '20px'}),
 
             dcc.Markdown(children=markdown_text),
 
