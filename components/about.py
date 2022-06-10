@@ -54,7 +54,12 @@ with great passion for business. He holds an Economics degree and works on marke
 analytics for Pinterest. Luis is on a continuous learning path and is convinced that Data Science is a great tool on his
  mission to spot market trends and support businesses growth. In his free time he enjoys activities such as boxing, 
  sharing quality time with family and friends, and traveling. 
+'''
 
+guillermo = '''
+**Guillermo Giraldo** is a Environmental Engineer with a Management Specialization with long experience on sanitary 
+services. He is a focused worker who likes to achieve his objectives in a clear way. He likes to learn and study, 
+even if the contents of his studies don't relate to his career knowledge.
 '''
 # ----------------------------------------------------------------------------------------------------------------------
 # Dash content
@@ -130,21 +135,21 @@ def about_gui():
             ],
             id='member3', align="center",
         ),
-        # dbc.Row(
-        #     [  # Picture
-        #         dbc.Col(html.H1([html.Img(src='./assets/JuanMonsalvo.png',
-        #                                   id='profile4',
-        #                                   style={'height': '60%', 'width': '60%'},
-        #                                   ),
-        #                          ], style={'textAlign': 'center'}
-        #                         ), width=2
-        #                 ),
-        #         # Description
-        #         dbc.Col(dcc.Markdown(children=jm), width=10
-        #                 ),
-        #     ],
-        #     id='member4', align="center",
-        # ),
+        dbc.Row(
+            [  # Picture
+                dbc.Col(html.H1([html.Img(src='./assets/Guillermo.jpg',
+                                          id='profile4',
+                                          style={'height': '60%', 'width': '60%'},
+                                          ),
+                                 ], style={'textAlign': 'center'}
+                                ), width=2
+                        ),
+                # Description
+                dbc.Col(dcc.Markdown(children=guillermo), width=10
+                        ),
+            ],
+            id='member4', align="center",
+        ),
         # dbc.Row(
         #     [  # Picture
         #         dbc.Col(html.H1([html.Img(src='./assets/JuanMonsalvo.png',
