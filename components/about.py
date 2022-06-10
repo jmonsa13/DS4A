@@ -47,6 +47,15 @@ experience, using virtual teaching tools and R software. She has the
 ability to guide students in projects where statistics is a way to achieve the proposed objectives. She likes to learn 
 and share what She has learned, now She is learning about data science to update the methodologies She use.
 '''
+
+luis = '''
+**[Luis Ruiz](https://www.linkedin.com/in/luis-humberto-ruiz-ponce-4b3008144/?locale=en_US)** is a tech savvy marketer 
+with great passion for business. He holds an Economics degree and works on marketing 
+analytics for Pinterest. Luis is on a continuous learning path and is convinced that Data Science is a great tool on his
+ mission to spot market trends and support businesses growth. In his free time he enjoys activities such as boxing, 
+ sharing quality time with family and friends, and traveling. 
+
+'''
 # ----------------------------------------------------------------------------------------------------------------------
 # Dash content
 # ----------------------------------------------------------------------------------------------------------------------
@@ -106,21 +115,21 @@ def about_gui():
             ],
             id='member2', align="center",
         ),
-        # dbc.Row(
-        #     [  # Picture
-        #         dbc.Col(html.H1([html.Img(src='./assets/JuanMonsalvo.png',
-        #                                   id='profile3',
-        #                                   style={'height': '60%', 'width': '60%'},
-        #                                   ),
-        #                          ], style={'textAlign': 'center'}
-        #                         ), width=2
-        #                 ),
-        #         # Description
-        #         dbc.Col(dcc.Markdown(children=jm), width=10
-        #                 ),
-        #     ],
-        #     id='member3', align="center",
-        # ),
+        dbc.Row(
+            [  # Picture
+                dbc.Col(html.H1([html.Img(src='./assets/Luis.jpg',
+                                          id='profile3',
+                                          style={'height': '60%', 'width': '60%'},
+                                          ),
+                                 ], style={'textAlign': 'center'}
+                                ), width=2
+                        ),
+                # Description
+                dbc.Col(dcc.Markdown(children=luis), width=10
+                        ),
+            ],
+            id='member3', align="center",
+        ),
         # dbc.Row(
         #     [  # Picture
         #         dbc.Col(html.H1([html.Img(src='./assets/JuanMonsalvo.png',

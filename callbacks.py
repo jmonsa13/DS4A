@@ -23,7 +23,7 @@ from components.tabs import *
 # ----------------------------------------------------------------------------------------------------------------------
 # Callback
 # ----------------------------------------------------------------------------------------------------------------------
-def register_callbacks(app, df):
+def register_callbacks(app, df, gdf):
     """
     Function that contain all the callback of the app
     :param app: dash app
@@ -57,4 +57,83 @@ def register_callbacks(app, df):
                           #plot_bgcolor='rgba(0, 0, 0, 0)',
                           #paper_bgcolor='rgba(0, 0, 0, 0)',
                           )
+        return fig
+
+    @app.callback(
+        Output('Geo_map', 'figure'),
+        Input('radio_items', 'value'))
+    def update_figure(selection):
+        if selection == "Countries":
+            # Count maps
+            disaster_groupby = df.groupby(by=["ISO"]).size().reset_index().rename(
+                columns={'ISO': 'Country', 0: 'Count'})
+
+            fig_map = px.choropleth(disaster_groupby, locations="Country",
+                                    color="Count",  # number of disasters in each country by year,
+                                    color_continuous_scale='Teal',
+                                    hover_name="Country",  # column to add to hover information
+                                    scope='world',
+                                    title="Number of disasters by Country")
+
+            fig_map.update_layout(
+                margin=dict(t=50, b=2, l=0, r=0),
+                coloraxis_showscale=False,
+                geo=dict(
+                    showframe=True,
+                    showcoastlines=True,
+                    projection_type='natural earth'
+                ),
+                coloraxis_colorbar_x=-0.3,
+            )
+            return fig_map
+        elif selection == "Continents":
+            disaster_groupby = df.groupby(by=["Continents"]).size().reset_index().rename(columns={0: 'Count'})
+
+            fig_map = px.choropleth(disaster_groupby,
+                                    geojson=gdf.geometry,
+                                    locations="Continents",
+                                    color="Count",  # number of disasters in each country by year,
+                                    color_continuous_scale='Teal',
+                                    hover_name="Continents",  # column to add to hover information
+                                    scope='world',
+                                    title="Number of disasters by Continent")
+
+            fig_map.update_layout(
+                margin=dict(t=50, b=5, l=0, r=0),
+                coloraxis_showscale=False,
+                geo=dict(
+                    showframe=True,
+                    showcoastlines=True,
+                    projection_type='natural earth',
+                ),
+                coloraxis_colorbar_x=-0.3,
+            )
+
+        return fig_map
+
+    @app.callback(
+        Output('Time_series', 'figure'),
+        Input('Geo_map', 'hoverData'),
+        Input('radio_items', 'value'))
+    def update_timeseries(hoverData, geo_type):
+        geo_location = hoverData['points'][0]['location']
+        if geo_type == "Countries":
+            dff = df[df['ISO'] == geo_location]
+
+            disasters_by_year = dff.groupby(by=["Year"]).size().reset_index()
+            disasters_by_year.columns = ["Year", "Count"]
+
+            title = f'Disasters in {geo_location}'
+
+
+        elif geo_type == "Continents":
+            dff = df[df['Continents'] == geo_location]
+
+            disasters_by_year = dff.groupby(by=["Year"]).size().reset_index()
+            disasters_by_year.columns = ["Year", "Count"]
+            title = f'Disasters in {geo_location}'
+
+        fig = px.line(disasters_by_year, x="Year", y="Count", title=title)
+        fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
+
         return fig

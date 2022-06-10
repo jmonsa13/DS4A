@@ -6,9 +6,13 @@
 # Library
 # ----------------------------------------------------------------------------------------------------------------------
 from dash import html, dcc, Input, Output
+import dash_bootstrap_components as dbc
 
 import plotly.express as px
+
 import pandas as pd
+import geopandas as gpd
+import json
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Variables definition
@@ -20,12 +24,35 @@ logo_path = image_path + '/Logo_Udjat.PNG'
 data_path = './00_DATA'
 raw_data_path = data_path + '/00_RAW_DATA'
 clean_data_path = data_path + '/01_CLEAN_DATA'
+
+# Continent json maps
+# Opening JSON file
+f = open(data_path + '/continent.json')
+cont = json.load(f)
+
+gdf = gpd.GeoDataFrame.from_features(cont)
+gdf = gdf.set_index("CONTINENT")
 # ----------------------------------------------------------------------------------------------------------------------
 # Data and Plot
 # ----------------------------------------------------------------------------------------------------------------------
 # Loading the clean data file as pandas  dataframe
 filename = clean_data_path + '/Disaster_Clean.xlsx'
 df_disaster = pd.read_excel(filename)
+# ---------------------------------------------------------
+# Creating the continent columns
+new_continent = []
+for index, row in df_disaster.iterrows():
+  if row['Continent'] == "Americas":
+    new_continent.append(row["Region"])
+  elif row['ISO'] == "AUS":
+    new_continent.append('Australia')
+  else:
+    new_continent.append(row["Continent"])
+
+# Creating the new column
+df_disaster["Continents"] = new_continent
+df_disaster["Continents"].replace({"Northern America": "North America", "Caribbean": "South America",
+                                   "Central America": "North America"}, inplace=True)
 
 # ---------------------------------------------------------
 # Disaster by subgroup
@@ -42,7 +69,7 @@ disaster_subgroup_list = df_disaster["Disaster Subgroup"].unique()
 
 # ----------------------------------------------------------------------------------------------------------------------
 markdown_text = '''
-**This text** is using markdown notation the dataset where taken from 
+Visualization of the frequency and location of natural disasters.
 [source dataset](https://www.emdat.be/)
 '''
 
@@ -55,6 +82,24 @@ def dashboard_gui():
             html.H2(children='Disaster Analysis.', style={"margin-left": "5px", 'margin-bottom': '20px'}),
 
             dcc.Markdown(children=markdown_text),
+
+            html.P("Select an option:"),
+            dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'], value='Continents', inline=True,
+                           labelStyle={'display': 'block', 'cursor': 'pointer', 'margin-left': '20px'}),
+
+            dbc.Row(
+                [
+                    # Main plot
+                    dbc.Col(dcc.Graph(id='Geo_map',
+                                      hoverData={'points': [{'location': 'North America'}]}), width=6
+                            ),
+                    # Second plot
+                    dbc.Col(dcc.Graph(id='Time_series'), width=6
+                            ),
+
+                ],
+                style={'height': '80%'}
+            ),
 
             html.H3(children='Total disaster'),
             dcc.Graph(
