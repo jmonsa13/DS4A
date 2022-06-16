@@ -19,7 +19,7 @@ from components.tabs import *
 # visit http://127.0.0.1:8050/ in your web browser.
 
 # Defining the object
-app = Dash(__name__, external_stylesheets=[dbc.themes.MINTY],  # MINTY, SLATE
+app = Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN],  # MINTY, SLATE
            meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1.0'}])
 
 # Title of the app
@@ -42,7 +42,7 @@ app.layout = dbc.Container(
                                           ),
                                  html.Img(src=app.get_asset_url('Logo_Udjat.PNG'),
                                           id='logo_udjat',
-                                          style={'height': '35%', 'width': '35%', "margin-left": "20px"},
+                                          style={'height': '37%', 'width': '37%', "margin-left": "20px"},
                                           )
                                  ], style={'textAlign': 'center'}
                                 ), width=2
@@ -86,5 +86,5 @@ register_callbacks(app, df_disaster, gdf)
 # ----------------------------------------------------------------------------------------------------------------------
 # Running the main code
 if __name__ == '__main__':
-    app.run_server(debug=False, host='0.0.0.0', port=8050)
-    #app.run_server(debug=True, port=8050)
+    #app.run_server(debug=False, host='0.0.0.0', port=8050)
+    app.run_server(debug=True, port=8050)

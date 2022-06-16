@@ -10,6 +10,7 @@ import dash_bootstrap_components as dbc
 
 import plotly.express as px
 
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 import json
@@ -42,12 +43,12 @@ df_disaster = pd.read_excel(filename)
 # Creating the continent columns
 new_continent = []
 for index, row in df_disaster.iterrows():
-  if row['Continent'] == "Americas":
-    new_continent.append(row["Region"])
-  elif row['ISO'] == "AUS":
-    new_continent.append('Australia')
-  else:
-    new_continent.append(row["Continent"])
+    if row['Continent'] == "Americas":
+        new_continent.append(row["Region"])
+    elif row['ISO'] == "AUS":
+        new_continent.append('Australia')
+    else:
+        new_continent.append(row["Continent"])
 
 # Creating the new column
 df_disaster["Continents"] = new_continent
@@ -66,12 +67,14 @@ fig0.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
 # ---------------------------------------------------------
 # Listing the subgroup of disasters
 disaster_subgroup_list = df_disaster["Disaster Subgroup"].unique()
+disaster_subgroup_list = np.append(disaster_subgroup_list, 'All')
 
 # ----------------------------------------------------------------------------------------------------------------------
 markdown_text = '''
 Visualization of the frequency and location of natural disasters.
 [source dataset](https://www.emdat.be/)
 '''
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Function
@@ -83,9 +86,30 @@ def dashboard_gui():
 
             dcc.Markdown(children=markdown_text),
 
-            html.P("Select an option:"),
-            dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'], value='Continents', inline=True,
-                           labelStyle={'display': 'block', 'cursor': 'pointer', 'margin-left': '20px'}),
+            html.Div([
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            html.P("Select an option:"),
+                            dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'], value='Continents',
+                                           inline=True,
+                                           labelStyle={'display': 'block', 'cursor': 'pointer', 'margin-left': '20px'})
+                        ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"}
+                    ),
+                    dbc.Col(
+                        [
+                            html.P("Select a type of disaster:"),
+                            dcc.Dropdown(id='disaster_type_dropdown', options=disaster_subgroup_list,
+                                         value=disaster_subgroup_list[-1])
+                        ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)',
+                                           "margin-left": "10px"}
+                    )
+
+                ],
+                style={'height': '80%', "width": "100%", "margin-top": "5px", "margin-left": "5px",
+                       "margin-bottom": "20px"}
+            ),
 
             dbc.Row(
                 [
@@ -98,7 +122,9 @@ def dashboard_gui():
                             ),
 
                 ],
-                style={'height': '80%'}
+                style={'height': '80%', "width": "100%"}
+            ),
+            ], style={"border": "1px black solid"}
             ),
 
             html.H3(children='Total disaster'),
@@ -116,5 +142,5 @@ def dashboard_gui():
             ]
             ),
             dcc.Graph(id='Disaster_subgroup')
-        ]
+        ],
     )
