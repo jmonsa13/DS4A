@@ -42,7 +42,7 @@ def register_callbacks(app, df, gdf):
     @app.callback(
         Output('Disaster_subgroup', 'figure'),
         Input('subgroup_dropdown', 'value'))
-    def update_figure(select_subgroup):
+    def update_figure_test(select_subgroup):
         df_disaster_filter_subgroup = df[df["Disaster Subgroup"] == select_subgroup]
 
         disasters_by_year_type = df_disaster_filter_subgroup.groupby(by=["Year", "Disaster Type"])[
@@ -147,7 +147,16 @@ def register_callbacks(app, df, gdf):
             disasters_by_year = dff.groupby(by=["Year"]).size().reset_index()
             disasters_by_year.columns = ["Year", "Count"]
 
-        fig = px.line(disasters_by_year, x="Year", y="Count", title=title)
+        # Empty df for year range
+        min_year = int(disasters_by_year['Year'].min())
+        empty_df = pd.DataFrame(data=range(min_year, 2022), columns=['Year'])
+
+        # filling the empty years
+        disasters_by_year_complete = pd.merge(left=disasters_by_year, right=empty_df, on='Year', how='right')
+        disasters_by_year_complete.fillna(0, inplace=True)
+
+
+        fig = px.line(disasters_by_year_complete, x="Year", y="Count", title=title)
         fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
 
         return fig
