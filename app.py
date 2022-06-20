@@ -1,18 +1,17 @@
 # Project DS4A - Team 40
 # Udjat webApp
-# June 05 2022
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Library
 # ----------------------------------------------------------------------------------------------------------------------
-from dash import Dash
+from dash import Dash, html
 import dash_labs as dl
 import dash_bootstrap_components as dbc
 
 from callbacks import register_callbacks
 
 from components.dashboard import *
-from components.tabs import *
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Main DASH
@@ -20,16 +19,31 @@ from components.tabs import *
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
+request_path_prefix = None
+
 # Defining the object
-app = Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN],  # MINTY, SLATE
+app = Dash(__name__, plugins=[dl.plugins.pages], requests_pathname_prefix=request_path_prefix,
+           external_stylesheets=[dbc.themes.CERULEAN],  # MINTY, SLATE
            meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1.0'}])
 
 # Title of the app
 app.title = 'Udjat 🌎 Team 40 | DS4A'
-
-# Other configuration
-# server = app.server
-# app.config['suppress_callback_exceptions'] = True
+# ----------------------------------------------------------------------------------------------------------------------
+# Top menu, items get from all pages registered with plugin.pages
+navbar = dbc.Nav(
+    [
+        dbc.DropdownMenu(
+            [
+                dbc.DropdownMenuItem('Disasters', href='/'),
+                dbc.DropdownMenuItem('Climate Change', href='/climate')
+            ],
+            nav=True,
+            label="Dashboard",
+        ),
+        dbc.NavItem(dbc.NavLink("Simulation", href='#')),
+        dbc.NavItem(dbc.NavLink("About Us", href="/us")),
+    ], pills=True, horizontal='end',
+)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Dash layout
@@ -51,16 +65,16 @@ app.layout = dbc.Container(
                         ),
                 # Title
                 dbc.Col(html.Div([html.H1(children='Udjat', style={'textAlign': 'center'}),
-                                  html.H4(children='"Mindfulness of our World"', style={'textAlign': 'center'}
+                                  html.H4(children='"Mindfulness of Our World"', style={'textAlign': 'center'}
                                           )], id="Title",
-                                 ), width=5
+                                 ), width=6
                         ),
                 # Tabs
-                dbc.Col(html.Div([build_tabs()],
+                dbc.Col(html.Div(navbar,
                                  className="one-third column",
                                  id="main_tabs",
                                  style={'textAlign': 'right'}
-                                 ), width=5
+                                 ), width=4
                         ),
             ],
             id='header', align="center", style={'height': '15%', 'margin-bottom': '20px'}
@@ -73,7 +87,7 @@ app.layout = dbc.Container(
         ),
         # Content
         html.Div(
-            children=dashboard_gui(),
+            children=dl.plugins.page_container,
             id='app-content'
         ),
     ],

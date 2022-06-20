@@ -5,9 +5,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # Library
 # ----------------------------------------------------------------------------------------------------------------------
+import pandas as pd
 import plotly.express as px
 from dash import Input, Output
-from components.tabs import *
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -28,16 +28,9 @@ def register_callbacks(app, df, gdf):
     Function that contain all the callback of the app
     :param app: dash app
     :param df: panda dataframe containing the disasters
+    :param gdf:
     :return:
     """
-
-    # callback update_content
-    @app.callback(
-        Output("app-content", "children"),
-        Input("tabs_pages", "value"))
-    def update_content(tab):
-        return render_content(tab)
-
     # callback iteraction
     @app.callback(
         Output('Disaster_subgroup', 'figure'),
@@ -133,7 +126,6 @@ def register_callbacks(app, df, gdf):
         else:
             df_filter = df[df["Disaster Subgroup"] == disaster_type]
             title = f'{disaster_type} disasters in {geo_location} '
-
 
         if geo_type == "Countries":
             dff = df_filter[df_filter['ISO'] == geo_location]

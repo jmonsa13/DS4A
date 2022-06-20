@@ -1,12 +1,16 @@
 # Project DS4A - Team 40
-# Udjat webApp - tabs components dash
-# June 05 2022
+# Udjat webApp - About us components dash
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Library
 # ----------------------------------------------------------------------------------------------------------------------
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+
+from dash_labs.plugins import register_page
+
+# dash-labs plugin call, menu name and route
+register_page(__name__, path='/us')
 # ----------------------------------------------------------------------------------------------------------------------
 udjat = '''
 We are team 40, the creator of **Udjat**, a diverse and empowered team with great ideas.  Climate change is a reality.
@@ -72,10 +76,11 @@ christian = '''
   hiking or walk through natural landscapes.
 '''
 # ----------------------------------------------------------------------------------------------------------------------
-# Dash content
+# Layout
 # ----------------------------------------------------------------------------------------------------------------------
-def about_gui():
-    return html.Div([
+# specific layout for this page
+layout = dbc.Container(
+    html.Div([
         # Title
         html.H2('About Us', style={"margin-left": "5px", 'margin-bottom': '20px'}),
 
@@ -176,5 +181,5 @@ def about_gui():
             id='member5', align="center",
         ),
     ])
-
+)
 # ----------------------------------------------------------------------------------------------------------------------
