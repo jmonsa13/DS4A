@@ -6,16 +6,18 @@
 # Library
 # ----------------------------------------------------------------------------------------------------------------------
 from dash import Dash
+import dash_labs as dl
 import dash_bootstrap_components as dbc
 
 from callbacks import register_callbacks
+
 from components.dashboard import *
 from components.tabs import *
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Main DASH
 # ----------------------------------------------------------------------------------------------------------------------
-# Run this app with `python main_ds4a.py` and
+# Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
 # Defining the object
@@ -86,5 +88,5 @@ register_callbacks(app, df_disaster, gdf)
 # ----------------------------------------------------------------------------------------------------------------------
 # Running the main code
 if __name__ == '__main__':
-    app.run_server(debug=False, host='0.0.0.0', port=8050)
-    #app.run_server(debug=True, port=8050)
+    #app.run_server(debug=False, host='0.0.0.0', port=8050)
+    app.run_server(debug=True, port=8050)

@@ -19,12 +19,7 @@ import json
 # Variables definition
 # ----------------------------------------------------------------------------------------------------------------------
 # Path variables
-image_path = './01_Images'
-logo_path = image_path + '/Logo_Udjat.PNG'
-
-data_path = './00_DATA'
-raw_data_path = data_path + '/00_RAW_DATA'
-clean_data_path = data_path + '/01_CLEAN_DATA'
+data_path = './data'
 
 # Continent json maps
 # Opening JSON file
@@ -37,7 +32,7 @@ gdf = gdf.set_index("CONTINENT")
 # Data and Plot
 # ----------------------------------------------------------------------------------------------------------------------
 # Loading the clean data file as pandas  dataframe
-filename = clean_data_path + '/Disaster_Clean.xlsx'
+filename = data_path + '/Disaster_Clean.xlsx'
 df_disaster = pd.read_excel(filename)
 # ---------------------------------------------------------
 # Creating the continent columns
@@ -91,6 +86,15 @@ def dashboard_gui():
                 [
                     dbc.Col(
                         [
+                            html.P("Select a type:"),
+                            dcc.RadioItems(id='analisis_type', options=['Time-Series', 'Geo-type'], value='Continents',
+                                           inline=True,
+                                           labelStyle={'display': 'block', 'cursor': 'pointer', 'margin-left': '20px'})
+                        ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"}
+                    ),
+
+                    dbc.Col(
+                        [
                             html.P("Select an option:"),
                             dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'], value='Continents',
                                            inline=True,
@@ -108,7 +112,8 @@ def dashboard_gui():
 
                 ],
                 style={'height': '80%', "width": "100%", "margin-top": "5px", "margin-left": "5px",
-                       "margin-bottom": "20px"}
+                       "margin-bottom": "20px"},
+                #justify="evenly"
             ),
 
             dbc.Row(
@@ -126,6 +131,8 @@ def dashboard_gui():
             ),
             ], style={"border": "1px black solid"}
             ),
+
+
 
             html.H3(children='Total disaster'),
             dcc.Graph(
