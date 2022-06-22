@@ -147,7 +147,6 @@ def register_callbacks(app, df, gdf):
         disasters_by_year_complete = pd.merge(left=disasters_by_year, right=empty_df, on='Year', how='right')
         disasters_by_year_complete.fillna(0, inplace=True)
 
-
         fig = px.line(disasters_by_year_complete, x="Year", y="Count", title=title)
         fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
 

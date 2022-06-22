@@ -72,7 +72,6 @@ Visualization of the frequency and location of natural disasters.
 [source dataset](https://www.emdat.be/)
 '''
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Layout
 # ----------------------------------------------------------------------------------------------------------------------
@@ -84,57 +83,59 @@ layout = dbc.Container(
             dcc.Markdown(children=markdown_text),
 
             html.Div([
-            dbc.Row(
-                [
-                    dbc.Col(
-                        [
-                            html.P("Select a type:"),
-                            dcc.RadioItems(id='analisis_type', options=['Time-Series', 'Geo-type'], value='Continents',
-                                           inline=True,
-                                           labelStyle={'display': 'block', 'cursor': 'pointer', 'margin-left': '20px'})
-                        ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"}
-                    ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            [
+                                html.P("Select a type:"),
+                                dcc.RadioItems(id='analisis_type', options=['Time-Series', 'Geo-type'],
+                                               value='Continents',
+                                               inline=True,
+                                               labelStyle={'display': 'block', 'cursor': 'pointer',
+                                                           'margin-left': '20px'})
+                            ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"}
+                        ),
 
-                    dbc.Col(
-                        [
-                            html.P("Select an option:"),
-                            dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'], value='Continents',
-                                           inline=True,
-                                           labelStyle={'display': 'block', 'cursor': 'pointer', 'margin-left': '20px'})
-                        ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"}
-                    ),
-                    dbc.Col(
-                        [
-                            html.P("Select a type of disaster:"),
-                            dcc.Dropdown(id='disaster_type_dropdown', options=disaster_subgroup_list,
-                                         value=disaster_subgroup_list[-1])
-                        ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)',
-                                           "margin-left": "10px"}
-                    )
+                        dbc.Col(
+                            [
+                                html.P("Select an option:"),
+                                dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'],
+                                               value='Continents',
+                                               inline=True,
+                                               labelStyle={'display': 'block', 'cursor': 'pointer',
+                                                           'margin-left': '20px'})
+                            ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"}
+                        ),
+                        dbc.Col(
+                            [
+                                html.P("Select a type of disaster:"),
+                                dcc.Dropdown(id='disaster_type_dropdown', options=disaster_subgroup_list,
+                                             value=disaster_subgroup_list[-1])
+                            ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)',
+                                               "margin-left": "10px"}
+                        )
 
-                ],
-                style={'height': '80%', "width": "100%", "margin-top": "5px", "margin-left": "5px",
-                       "margin-bottom": "20px"},
-                #justify="evenly"
-            ),
+                    ],
+                    style={'height': '80%', "width": "100%", "margin-top": "5px", "margin-left": "5px",
+                           "margin-bottom": "20px"},
+                    # justify="evenly"
+                ),
 
-            dbc.Row(
-                [
-                    # Main plot
-                    dbc.Col(dcc.Graph(id='Geo_map',
-                                      hoverData={'points': [{'location': 'North America'}]}), width=6
-                            ),
-                    # Second plot
-                    dbc.Col(dcc.Graph(id='Time_series'), width=6
-                            ),
+                dbc.Row(
+                    [
+                        # Main plot
+                        dbc.Col(dcc.Graph(id='Geo_map',
+                                          hoverData={'points': [{'location': 'North America'}]}), width=6
+                                ),
+                        # Second plot
+                        dbc.Col(dcc.Graph(id='Time_series'), width=6
+                                ),
 
-                ],
-                style={'height': '80%', "width": "100%"}
-            ),
+                    ],
+                    style={'height': '80%', "width": "100%"}
+                ),
             ], style={"border": "1px black solid"}
             ),
-
-
 
             html.H3(children='Total disaster'),
             dcc.Graph(
