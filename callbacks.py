@@ -1,6 +1,5 @@
 # Project DS4A - Team 40
 # Udjat webApp - Callback function
-# June 05 2022
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Library
@@ -9,71 +8,78 @@ import pandas as pd
 import plotly.express as px
 from dash import Input, Output
 
+from components.disaster_component import disaster_analisis
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Function
-# ----------------------------------------------------------------------------------------------------------------------
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Variables definition
-# ----------------------------------------------------------------------------------------------------------------------
-# Path variables
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Callback
 # ----------------------------------------------------------------------------------------------------------------------
+# Main callback situation
 def register_callbacks(app, df, gdf):
     """
     Function that contain all the callback of the app
     :param app: dash app
     :param df: panda dataframe containing the disasters
-    :param gdf:
+    :param gdf: Geo dataframe containing the Continent
     :return:
     """
-    # callback iteraction
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Callback for changing the type of analisis (Time-series or Geoplot)
     @app.callback(
-        Output('Disaster_subgroup', 'figure'),
-        Input('subgroup_dropdown', 'value'))
-    def update_figure_test(select_subgroup):
-        df_disaster_filter_subgroup = df[df["Disaster Subgroup"] == select_subgroup]
+        Output('disaster-content', 'children'),
+        Input('analisis_type', 'value'))
+    def geo_timeseries_content(analisis_type):
+        return disaster_analisis(analisis_type)
 
-        disasters_by_year_type = df_disaster_filter_subgroup.groupby(by=["Year", "Disaster Type"])[
-            "Country"].count().reset_index()
-
-        disasters_by_year_type.columns = ["Year", "Disaster Type", "Count"]
-
-        fig = px.line(disasters_by_year_type, x="Year", y="Count", color='Disaster Type',
-                      title=f'# Disasters by Year by {select_subgroup}')
-        fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"],
-                          template='plotly',
-                          #plot_bgcolor='rgba(0, 0, 0, 0)',
-                          #paper_bgcolor='rgba(0, 0, 0, 0)',
-                          )
-        return fig
-
+# ----------------------------------------------------------------------------------------------------------------------
+    # # callback iteraction
+    # @app.callback(
+    #     Output('Disaster_subgroup', 'figure'),
+    #     Input('subgroup_dropdown', 'value'))
+    # def update_figure_test(select_subgroup):
+    #     df_disaster_filter_subgroup = df[df["Disaster Subgroup"] == select_subgroup]
+    #
+    #     disasters_by_year_type = df_disaster_filter_subgroup.groupby(by=["Year", "Disaster Type"])[
+    #         "Country"].count().reset_index()
+    #
+    #     disasters_by_year_type.columns = ["Year", "Disaster Type", "Count"]
+    #
+    #     fig = px.line(disasters_by_year_type, x="Year", y="Count", color='Disaster Type',
+    #                   title=f'# Disasters by Year by {select_subgroup}')
+    #     fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"],
+    #                       template='plotly',
+    #                       #plot_bgcolor='rgba(0, 0, 0, 0)',
+    #                       #paper_bgcolor='rgba(0, 0, 0, 0)',
+    #                       )
+    #     return fig
+# ----------------------------------------------------------------------------------------------------------------------
+# Callback for updating the geoplot of disasters
     @app.callback(
         Output('Geo_map', 'figure'),
         Input('radio_items', 'value'),
         Input('disaster_type_dropdown', 'value'))
     def update_figure(selection, disaster_type):
+        # filtering by type of disasters
         if disaster_type == 'All':
             df_filter = df.copy()
         else:
             df_filter = df[df["Disaster Subgroup"] == disaster_type]
 
+        # Filtering by countries
         if selection == "Countries":
-            # Count maps
+            # Count by countries
             disaster_groupby = df_filter.groupby(by=["ISO"]).size().reset_index().rename(
                 columns={'ISO': 'Country', 0: 'Count'})
 
+            # Geo map
             fig_map = px.choropleth(disaster_groupby, locations="Country",
                                     color="Count",  # number of disasters in each country by year,
                                     color_continuous_scale='Teal',
                                     hover_name="Country",  # column to add to hover information
                                     scope='world',
                                     title="Number of disasters by Country")
-
+            # Update layout of map
             fig_map.update_layout(
                 margin=dict(t=50, b=2, l=0, r=0),
                 coloraxis_showscale=False,
@@ -85,9 +91,14 @@ def register_callbacks(app, df, gdf):
                 coloraxis_colorbar_x=-0.3,
             )
             return fig_map
+
+        # Filtering by continents
         elif selection == "Continents":
+
+            # Count by continents
             disaster_groupby = df_filter.groupby(by=["Continents"]).size().reset_index().rename(columns={0: 'Count'})
 
+            # Geo map
             fig_map = px.choropleth(disaster_groupby,
                                     geojson=gdf.geometry,
                                     locations="Continents",
@@ -97,6 +108,7 @@ def register_callbacks(app, df, gdf):
                                     scope='world',
                                     title="Number of disasters by Continent")
 
+            # Update layout of map
             fig_map.update_layout(
                 margin=dict(t=50, b=5, l=0, r=0),
                 coloraxis_showscale=False,
@@ -110,6 +122,8 @@ def register_callbacks(app, df, gdf):
 
         return fig_map
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Callback for updating the time series of the geo map.
     @app.callback(
         Output('Time_series', 'figure'),
         Input('Geo_map', 'hoverData'),
@@ -127,6 +141,7 @@ def register_callbacks(app, df, gdf):
             df_filter = df[df["Disaster Subgroup"] == disaster_type]
             title = f'{disaster_type} disasters in {geo_location} '
 
+        # Filtering by countries or continents
         if geo_type == "Countries":
             dff = df_filter[df_filter['ISO'] == geo_location]
 

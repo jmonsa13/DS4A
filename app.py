@@ -1,5 +1,5 @@
 # Project DS4A - Team 40
-# Udjat webApp
+# Udjat webApp  Main app container
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Library
@@ -9,8 +9,7 @@ import dash_labs as dl
 import dash_bootstrap_components as dbc
 
 from callbacks import register_callbacks
-
-from components.dashboard import *
+from components.data_component import *
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -44,7 +43,6 @@ navbar = dbc.Nav(
         dbc.NavItem(dbc.NavLink("About Us", href="/us")),
     ], pills=True, horizontal='end',
 )
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Dash layout
 app.layout = dbc.Container(
@@ -85,7 +83,7 @@ app.layout = dbc.Container(
         ],
             id='line_header', align="center", style={'margin-bottom': '20px'}
         ),
-        # Content
+        # Content for diferent pages
         html.Div(
             children=dl.plugins.page_container,
             id='app-content'

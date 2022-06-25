@@ -1,87 +1,43 @@
 # Project DS4A - Team 40
-# Udjat webApp - Disaster components dash
+# Udjat webApp - Disaster page dash
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Library
 # ----------------------------------------------------------------------------------------------------------------------
-import plotly.express as px
-
-import numpy as np
-import pandas as pd
-import geopandas as gpd
-import json
-
-from dash import html, dcc, Input, Output
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash_labs.plugins import register_page
+
+from components.disaster_component import geo_plot_layout
+from components.data_component import disaster_subgroup_list
+
 
 # dash-labs plugin call, menu name and route
 register_page(__name__, path='/')
 # ----------------------------------------------------------------------------------------------------------------------
 # Variables definition
 # ----------------------------------------------------------------------------------------------------------------------
-# Path variables
-data_path = './data'
-
-# Continent json maps
-# Opening JSON file
-f = open(data_path + '/continent.json')
-cont = json.load(f)
-
-gdf = gpd.GeoDataFrame.from_features(cont)
-gdf = gdf.set_index("CONTINENT")
-# ----------------------------------------------------------------------------------------------------------------------
-# Data and Plot
-# ----------------------------------------------------------------------------------------------------------------------
-# Loading the clean data file as pandas  dataframe
-filename = data_path + '/Disaster_Clean.xlsx'
-df_disaster = pd.read_excel(filename)
-# ---------------------------------------------------------
-# Creating the continent columns
-new_continent = []
-for index, row in df_disaster.iterrows():
-    if row['Continent'] == "Americas":
-        new_continent.append(row["Region"])
-    elif row['ISO'] == "AUS":
-        new_continent.append('Australia')
-    else:
-        new_continent.append(row["Continent"])
-
-# Creating the new column
-df_disaster["Continents"] = new_continent
-df_disaster["Continents"].replace({"Northern America": "North America", "Caribbean": "South America",
-                                   "Central America": "North America"}, inplace=True)
-
-# ---------------------------------------------------------
-# Disaster by subgroup
-# Checking how many records we have per year
-disasters_by_year_subgroup = df_disaster.groupby(by=["Year", "Disaster Subgroup"]).size().reset_index()
-disasters_by_year_subgroup.columns = ["Year", "Disaster Subgroup", "Count"]
-
-fig0 = px.line(disasters_by_year_subgroup, x="Year", y="Count", color='Disaster Subgroup', title='# Disasters by Year')
-fig0.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
-
-# ---------------------------------------------------------
-# Listing the subgroup of disasters
-disaster_subgroup_list = df_disaster["Disaster Subgroup"].unique()
-disaster_subgroup_list = np.append(disaster_subgroup_list, 'All')
-
-# ----------------------------------------------------------------------------------------------------------------------
 markdown_text = '''
-Visualization of the frequency and location of natural disasters.
-[source dataset](https://www.emdat.be/)
+Disasters generate high human and economic costs which can be mitigated with proper preparation. Understanding 
+the effect of external factors such as climate change over natural disasters  is vital to generate strategies 
+to diminish such costs. Therefore, we created this visualization tool for analysing the frequency, location, type, 
+subtype, and cost of natural disasters covering the period from 1960 and 2021. 
+ The data used for this dashboard can be found on [source dataset](https://www.emdat.be/).
 '''
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Layout
+# Layout for disaster Page
 # ----------------------------------------------------------------------------------------------------------------------
 layout = dbc.Container(
     html.Div(
         [
-            html.H2(children='Disaster Analysis.', style={"margin-left": "5px", 'margin-bottom': '20px'}),
+            # Title of the pages
+            html.H2(children='Disaster Analysis', style={"margin-left": "5px", 'margin-bottom': '20px'}),
 
+            # Content markdown
             dcc.Markdown(children=markdown_text),
 
+            # Selection tools for filtering
             html.Div([
                 dbc.Row(
                     [
@@ -89,7 +45,7 @@ layout = dbc.Container(
                             [
                                 html.P("Select a type:"),
                                 dcc.RadioItems(id='analisis_type', options=['Time-Series', 'Geo-type'],
-                                               value='Continents',
+                                               value='Time-Series',
                                                inline=True,
                                                labelStyle={'display': 'block', 'cursor': 'pointer',
                                                            'margin-left': '20px'})
@@ -121,37 +77,13 @@ layout = dbc.Container(
                     # justify="evenly"
                 ),
 
-                dbc.Row(
-                    [
-                        # Main plot
-                        dbc.Col(dcc.Graph(id='Geo_map',
-                                          hoverData={'points': [{'location': 'North America'}]}), width=6
-                                ),
-                        # Second plot
-                        dbc.Col(dcc.Graph(id='Time_series'), width=6
-                                ),
-
-                    ],
-                    style={'height': '80%', "width": "100%"}
+                # Graph plots
+                dbc.Row(children=geo_plot_layout(),
+                        id='disaster-content',
+                        style={'height': '80%', "width": "100%"}
                 ),
             ], style={"border": "1px black solid"}
             ),
-
-            html.H3(children='Total disaster'),
-            dcc.Graph(
-                id='Total_disaster',
-                figure=fig0
-            ),
-
-            html.H4(children='Disaster by subgroup'),
-
-            html.Div(children=[
-                html.Label('Dropdown'),
-                dcc.Dropdown(id='subgroup_dropdown', options=disaster_subgroup_list,
-                             value=disaster_subgroup_list[0])
-            ]
-            ),
-            dcc.Graph(id='Disaster_subgroup')
         ],
     )
 )

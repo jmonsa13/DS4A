@@ -27,7 +27,6 @@ in avoiding further disasters and their impact.  This is the reason for the exis
 * **Udjat** represents an all-seeing, protective eye looking out for natural disasters. 
 '''
 
-
 jm = '''
 **[Juan Felipe Monsalvo](https://www.linkedin.com/in/jmonsalvo/)** is a Mechanical Engineer who graduated from 
 EAFIT University - Colombia and the ENIT – France.
@@ -89,7 +88,7 @@ layout = dbc.Container(
 
         html.Br(),
 
-        # Members
+        # Members 1
         dbc.Row(
             [  # Picture
                 dbc.Col(html.H1([html.Img(src='./assets/Malcolm.png',
@@ -105,6 +104,8 @@ layout = dbc.Container(
             ],
             id='member0', align="center",
         ),
+
+        # Members 2
         dbc.Row(
             [  # Picture
                 dbc.Col(html.H1([html.Img(src='./assets/Sandra.png',
@@ -120,6 +121,8 @@ layout = dbc.Container(
             ],
             id='member1', align="center",
         ),
+
+        # Members 3
         dbc.Row(
             [  # Picture
                 dbc.Col(html.H1([html.Img(src='./assets/JuanMonsalvo.png',
@@ -135,6 +138,8 @@ layout = dbc.Container(
             ],
             id='member2', align="center",
         ),
+
+        # Members 4
         dbc.Row(
             [  # Picture
                 dbc.Col(html.H1([html.Img(src='./assets/Luis.jpg',
@@ -150,6 +155,8 @@ layout = dbc.Container(
             ],
             id='member3', align="center",
         ),
+
+        # Members 5
         dbc.Row(
             [  # Picture
                 dbc.Col(html.H1([html.Img(src='./assets/Guillermo.jpg',
@@ -165,6 +172,8 @@ layout = dbc.Container(
             ],
             id='member4', align="center",
         ),
+
+        # Members 6
         dbc.Row(
             [  # Picture
                 dbc.Col(html.H1([html.Img(src='./assets/christian.jpg',
