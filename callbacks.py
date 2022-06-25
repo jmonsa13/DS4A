@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 from dash import Input, Output
 
-from components.disaster_component import disaster_analisis
+from components.disaster_component import disaster_analisis_selector, disaster_analisis
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -33,26 +33,61 @@ def register_callbacks(app, df, gdf):
         return disaster_analisis(analisis_type)
 
 # ----------------------------------------------------------------------------------------------------------------------
-    # # callback iteraction
-    # @app.callback(
-    #     Output('Disaster_subgroup', 'figure'),
-    #     Input('subgroup_dropdown', 'value'))
-    # def update_figure_test(select_subgroup):
-    #     df_disaster_filter_subgroup = df[df["Disaster Subgroup"] == select_subgroup]
-    #
-    #     disasters_by_year_type = df_disaster_filter_subgroup.groupby(by=["Year", "Disaster Type"])[
-    #         "Country"].count().reset_index()
-    #
-    #     disasters_by_year_type.columns = ["Year", "Disaster Type", "Count"]
-    #
-    #     fig = px.line(disasters_by_year_type, x="Year", y="Count", color='Disaster Type',
-    #                   title=f'# Disasters by Year by {select_subgroup}')
-    #     fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"],
-    #                       template='plotly',
-    #                       #plot_bgcolor='rgba(0, 0, 0, 0)',
-    #                       #paper_bgcolor='rgba(0, 0, 0, 0)',
-    #                       )
-    #     return fig
+# Callback for changing the type of filter (Time-series or Geoplot)
+    @app.callback(
+        Output('disaster-content_selector', 'children'),
+        Input('analisis_type', 'value'))
+    def geo_timeseries_selector(analisis_type):
+        return disaster_analisis_selector(analisis_type)
+
+# ----------------------------------------------------------------------------------------------------------------------
+    # callback iteraction
+    @app.callback(
+        Output('Total_disaster', 'figure'),
+        Input('radio_items_time', 'value'),
+        Input('radio_items_format', 'value'))
+    def update_figure_time(select_type, select_format):
+        # filtering by type of disasters
+        if select_type == 'All disasters':
+            if select_format == 'Frequency':
+                disasters_by_year = df["Year"].value_counts().to_frame().reset_index()
+                disasters_by_year.columns = ["Year", "Count"]
+                disasters_by_year = disasters_by_year.sort_values(by="Year", ascending=False)
+
+                # Plotly
+                fig = px.line(disasters_by_year, x="Year", y="Count", title='Total Disasters by Year')
+
+            elif select_format == 'Economical impact':
+                total_damage_sum_year = df.groupby(by="Year")["Total Damages, Adjusted ('000 US$)"].sum().reset_index()
+                total_damage_sum_year.columns = ["Year", "Total Damages, Adjusted ('000 US$) SUM"]
+
+                # Plotly
+                fig = px.bar(total_damage_sum_year, x="Year", y="Total Damages, Adjusted ('000 US$) SUM",
+                             title='Total Cost of Disasters by Year')
+
+        elif select_type == 'By type':
+            if select_format == 'Frequency':
+                # Disaster by subgroup
+                disasters_by_year_subgroup = df.groupby(by=["Year", "Disaster Subgroup"]).size().reset_index()
+                disasters_by_year_subgroup.columns = ["Year", "Disaster Type", "Count"]
+
+                # plotly
+                fig = px.line(disasters_by_year_subgroup, x="Year", y="Count", color='Disaster Type',
+                              title='Total Disasters by Year for every Disaster Type')
+
+            elif select_format == 'Economical impact':
+                total_damage_sum_year = df.groupby(by=["Year"
+                    , "Disaster Subgroup"])["Total Damages, Adjusted ('000 US$)"].sum().reset_index()
+                total_damage_sum_year.columns = ["Year", "Disaster Type",  "Total Damages, Adjusted ('000 US$) SUM"]
+
+                # Plotly
+                fig = px.bar(total_damage_sum_year, x="Year", y="Total Damages, Adjusted ('000 US$) SUM",
+                             color="Disaster Type", title='Total Cost of Disasters by Year and Type')
+
+        fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"], template='seaborn')
+
+        return fig
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Callback for updating the geoplot of disasters
     @app.callback(

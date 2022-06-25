@@ -8,9 +8,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash_labs.plugins import register_page
 
-from components.disaster_component import geo_plot_layout
-from components.data_component import disaster_subgroup_list
-
+from components.disaster_component import geo_plot_layout_selector, geo_plot_layout
 
 # dash-labs plugin call, menu name and route
 register_page(__name__, path='/')
@@ -43,45 +41,44 @@ layout = dbc.Container(
                     [
                         dbc.Col(
                             [
-                                html.P("Select a type:"),
-                                dcc.RadioItems(id='analisis_type', options=['Time-Series', 'Geo-type'],
-                                               value='Time-Series',
-                                               inline=True,
-                                               labelStyle={'display': 'block', 'cursor': 'pointer',
-                                                           'margin-left': '20px'})
-                            ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"}
-                        ),
-
-                        dbc.Col(
-                            [
-                                html.P("Select an option:"),
-                                dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'],
-                                               value='Continents',
-                                               inline=True,
-                                               labelStyle={'display': 'block', 'cursor': 'pointer',
-                                                           'margin-left': '20px'})
-                            ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"}
+                                html.P("Select a type of analysis:", style={'font-weight': 'bold'}),
+                            ], width="auto", style={"margin-left": "10px"}
                         ),
                         dbc.Col(
                             [
-                                html.P("Select a type of disaster:"),
-                                dcc.Dropdown(id='disaster_type_dropdown', options=disaster_subgroup_list,
-                                             value=disaster_subgroup_list[-1])
-                            ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)',
-                                               "margin-left": "10px"}
-                        )
-
+                                dcc.Dropdown(options=['Time-Series', 'Geo-type'],
+                                             value='Time-Series',
+                                             style={'height': '10px'},
+                                             id='analisis_type'
+                                             )
+                            ], width="3",
+                        ),
                     ],
-                    style={'height': '80%', "width": "100%", "margin-top": "5px", "margin-left": "5px",
-                           "margin-bottom": "20px"},
-                    # justify="evenly"
+                    style={'height': '50%', "width": "100%", "margin-top": "10px", "margin-left": "5px",
+                           "margin-bottom": "5px"}
                 ),
+
+                # Division line
+                dbc.Row(
+                    [
+                        html.Hr(
+                            style={'borderWidth': "5vh", "width": "100%", "borderColor": "#000000", "opacity": "unset"}
+                        ),
+                    ], style={"margin-left": "5px", "margin-right": "5px"}
+                ),
+
+                # Selection tools depending on the initial choice
+                dbc.Row(children=geo_plot_layout_selector(),
+                        id='disaster-content_selector',
+                        style={'height': '80%', "width": "100%", "margin-top": "5px", "margin-left": "5px",
+                               "margin-bottom": "20px"},
+                        ),
 
                 # Graph plots
                 dbc.Row(children=geo_plot_layout(),
                         id='disaster-content',
                         style={'height': '80%', "width": "100%"}
-                ),
+                        ),
             ], style={"border": "1px black solid"}
             ),
         ],
