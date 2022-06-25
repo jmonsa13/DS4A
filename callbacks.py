@@ -40,14 +40,26 @@ def register_callbacks(app, df, gdf):
     def geo_timeseries_selector(analisis_type):
         return disaster_analisis_selector(analisis_type)
 
-# ----------------------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Callback for changing the type of filter (Time-series or Geoplot)
+    @app.callback(
+        Output('agg_function_selector', 'style'),
+        Input('radio_items_format', 'value'))
+    def timeseries_aggfunction_selector(selection):
+        if selection == 'Frequency':
+            return {'display': 'None'}
+        if selection == 'Economical Impact':
+            return {'display': 'block'}
+
+    # ----------------------------------------------------------------------------------------------------------------------
     # callback iteraction
     @app.callback(
         Output('Total_disaster', 'figure'),
         Input('radio_items_time', 'value'),
-        Input('radio_items_format', 'value'))
-    def update_figure_time(select_type, select_format):
-        # filtering by type of disasters
+        Input('radio_items_format', 'value'),
+        Input('radio_items_measure', 'value'))
+    def update_figure_time(select_type, select_format, agg_type='Sum'):
+        # filtering by type of disaster
         if select_type == 'All disasters':
             if select_format == 'Frequency':
                 disasters_by_year = df["Year"].value_counts().to_frame().reset_index()
@@ -57,13 +69,26 @@ def register_callbacks(app, df, gdf):
                 # Plotly
                 fig = px.line(disasters_by_year, x="Year", y="Count", title='Total Disasters by Year')
 
-            elif select_format == 'Economical impact':
-                total_damage_sum_year = df.groupby(by="Year")["Total Damages, Adjusted ('000 US$)"].sum().reset_index()
-                total_damage_sum_year.columns = ["Year", "Total Damages, Adjusted ('000 US$) SUM"]
+            elif select_format == 'Economical Impact':
+                # Sum total cost
+                if agg_type == 'Sum':
+                    total_damage_sum_year = df.groupby(by="Year")["Total Damages, Adjusted ('000 US$)"]\
+                        .sum().reset_index()
+                    total_damage_sum_year.columns = ["Year", "Total Damages, Adjusted ('000 US$) SUM"]
 
-                # Plotly
-                fig = px.bar(total_damage_sum_year, x="Year", y="Total Damages, Adjusted ('000 US$) SUM",
-                             title='Total Cost of Disasters by Year')
+                    # Plotly
+                    fig = px.bar(total_damage_sum_year, x="Year", y="Total Damages, Adjusted ('000 US$) SUM",
+                                 title='Total Cost of Disasters by Year')
+
+                # Average total cost by year
+                elif agg_type == 'Mean':
+                    total_damage_sum_year = df.groupby(by="Year")["Total Damages, Adjusted ('000 US$)"]\
+                        .mean().reset_index()
+                    total_damage_sum_year.columns = ["Year", "Total Damages, Adjusted ('000 US$) MEAN"]
+
+                    # Plotly
+                    fig = px.bar(total_damage_sum_year, x="Year", y="Total Damages, Adjusted ('000 US$) MEAN",
+                                 title='Mean Cost of Disasters by Year')
 
         elif select_type == 'By type':
             if select_format == 'Frequency':
@@ -75,14 +100,27 @@ def register_callbacks(app, df, gdf):
                 fig = px.line(disasters_by_year_subgroup, x="Year", y="Count", color='Disaster Type',
                               title='Total Disasters by Year for every Disaster Type')
 
-            elif select_format == 'Economical impact':
-                total_damage_sum_year = df.groupby(by=["Year"
-                    , "Disaster Subgroup"])["Total Damages, Adjusted ('000 US$)"].sum().reset_index()
-                total_damage_sum_year.columns = ["Year", "Disaster Type",  "Total Damages, Adjusted ('000 US$) SUM"]
+            elif select_format == 'Economical Impact':
+                # Sum total cost
 
-                # Plotly
-                fig = px.bar(total_damage_sum_year, x="Year", y="Total Damages, Adjusted ('000 US$) SUM",
-                             color="Disaster Type", title='Total Cost of Disasters by Year and Type')
+                if agg_type == 'Sum':
+                    total_damage_sum_year = df.groupby(by=["Year"
+                        , "Disaster Subgroup"])["Total Damages, Adjusted ('000 US$)"].sum().reset_index()
+                    total_damage_sum_year.columns = ["Year", "Disaster Type", "Total Damages, Adjusted ('000 US$) SUM"]
+
+                    # Plotly
+                    fig = px.bar(total_damage_sum_year, x="Year", y="Total Damages, Adjusted ('000 US$) SUM",
+                                 color="Disaster Type", title='Total Cost of Disasters by Year and Type')
+
+                # Average total cost by year
+                elif agg_type == 'Mean':
+                    total_damage_sum_year = df.groupby(by=["Year"
+                        , "Disaster Subgroup"])["Total Damages, Adjusted ('000 US$)"].mean().reset_index()
+                    total_damage_sum_year.columns = ["Year", "Disaster Type", "Total Damages, Adjusted ('000 US$) MEAN"]
+
+                    # Plotly
+                    fig = px.bar(total_damage_sum_year, x="Year", y="Total Damages, Adjusted ('000 US$) MEAN",
+                                 color="Disaster Type", title='Mean Cost of Disasters by Year and Type')
 
         fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"], template='seaborn')
 

@@ -35,25 +35,25 @@ def disaster_analisis_selector(analisis_type):
 # Geoplot layout selector
 def geo_plot_layout_selector():
     layout = [
-            dbc.Col(
-                [
-                    html.P("Select an option:", style={'font-weight': 'bold'}),
-                    dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'],
-                                   value='Continents',
-                                   inline=True,
-                                   labelStyle={'display': 'block', 'cursor': 'pointer',
-                                               'margin-left': '20px'})
-                ],
-                width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"},
-            ),
-            dbc.Col(
-                [
-                    html.P("Select a type of disaster:", style={'font-weight': 'bold'}),
-                    dcc.Dropdown(id='disaster_type_dropdown', options=disaster_subgroup_list,
-                                 value=disaster_subgroup_list[-1])
-                ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)',
-                                   "margin-left": "5px"}, id='second_selector'
-            )
+        dbc.Col(
+            [
+                html.P("Select an option:", style={'font-weight': 'bold'}),
+                dcc.RadioItems(id='radio_items', options=['Continents', 'Countries'],
+                               value='Continents',
+                               inline=True,
+                               labelStyle={'display': 'block', 'cursor': 'pointer',
+                                           'margin-left': '20px'})
+            ],
+            width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"},
+        ),
+        dbc.Col(
+            [
+                html.P("Select a type of disaster:", style={'font-weight': 'bold'}),
+                dcc.Dropdown(id='disaster_type_dropdown', options=disaster_subgroup_list,
+                             value=disaster_subgroup_list[-1])
+            ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)',
+                               "margin-left": "5px"}, id='second_selector'
+        )
     ]
 
     return layout
@@ -75,28 +75,40 @@ def geo_plot_layout():
 # Geoplot layout selector
 def timeseries_layout_selector():
     layout = [
-            dbc.Col(
-                [
-                    html.P("Select a visualization:",  style={'font-weight': 'bold'}),
-                    dcc.RadioItems(id='radio_items_time', options=['All disasters', 'By type'],
-                                   value='All disasters',
-                                   inline=True,
-                                   labelStyle={'display': 'block', 'cursor': 'pointer',
-                                               'margin-left': '20px'})
-                ],
-                width=4, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"},
-            ),
-            dbc.Col(
-                [
-                    html.P("Select a format:", style={'font-weight': 'bold'}),
-                    dcc.RadioItems(id='radio_items_format', options=['Frequency', 'Economical impact'],
-                                   value='Frequency',
-                                   inline=True,
-                                   labelStyle={'display': 'block', 'cursor': 'pointer',
-                                               'margin-left': '20px'})
-                ],
-                width=4, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"},
-            )
+        dbc.Col(
+            [
+                html.P("Select a visualization:", style={'font-weight': 'bold'}),
+                dcc.RadioItems(id='radio_items_time', options=['All disasters', 'By type'],
+                               value='All disasters',
+                               inline=True,
+                               labelStyle={'display': 'block', 'cursor': 'pointer',
+                                           'margin-left': '20px'})
+            ],
+            width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"},
+        ),
+        dbc.Col(
+            [
+                html.P("Select a format:", style={'font-weight': 'bold'}),
+                dcc.RadioItems(id='radio_items_format', options=['Frequency', 'Economical Impact'],
+                               value='Frequency',
+                               inline=True,
+                               labelStyle={'display': 'block', 'cursor': 'pointer',
+                                           'margin-left': '20px'})
+            ],
+            width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"},
+        ),
+        dbc.Col(children=[
+            html.Br(),
+            dcc.RadioItems(id='radio_items_measure', options=['Sum', 'Mean'],
+                           value='Sum',
+                           inline=True,
+                           labelStyle={'display': 'block', 'cursor': 'pointer',
+                                       'margin-left': '20px'})
+        ],
+            width='auto', style={"margin-left": "10px"},
+            id='agg_function_selector'
+        )
+
     ]
 
     return layout
