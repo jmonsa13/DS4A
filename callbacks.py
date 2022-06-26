@@ -131,8 +131,9 @@ def register_callbacks(app, df, gdf):
     @app.callback(
         Output('Geo_map', 'figure'),
         Input('radio_items', 'value'),
-        Input('disaster_type_dropdown', 'value'))
-    def update_figure(selection, disaster_type):
+        Input('disaster_type_dropdown', 'value'),
+        Input('geo_items_format', 'value'))
+    def update_figure(selection, disaster_type, format):
         # filtering by type of disasters
         if disaster_type == 'All':
             df_filter = df.copy()
@@ -141,57 +142,78 @@ def register_callbacks(app, df, gdf):
 
         # Filtering by countries
         if selection == "Countries":
-            # Count by countries
-            disaster_groupby = df_filter.groupby(by=["ISO"]).size().reset_index().rename(
-                columns={'ISO': 'Country', 0: 'Count'})
 
-            # Geo map
-            fig_map = px.choropleth(disaster_groupby, locations="Country",
-                                    color="Count",  # number of disasters in each country by year,
-                                    color_continuous_scale='Teal',
-                                    hover_name="Country",  # column to add to hover information
-                                    scope='world',
-                                    title="Number of disasters by Country")
-            # Update layout of map
-            fig_map.update_layout(
-                margin=dict(t=50, b=2, l=0, r=0),
-                coloraxis_showscale=False,
-                geo=dict(
-                    showframe=True,
-                    showcoastlines=True,
-                    projection_type='natural earth'
-                ),
-                coloraxis_colorbar_x=-0.3,
-            )
-            return fig_map
+            # Filtering by Format
+            if format == 'Frequency':
+                # Count by countries
+                disaster_groupby = df_filter.groupby(by=["ISO", 'Countries']).size().reset_index().rename(
+                    columns={'ISO': 'Country', 0: 'Count'})
+
+                # Geo map
+                fig_map = px.choropleth(disaster_groupby, locations="Country",
+                                        color="Count",  # number of disasters in each country by year,
+                                        color_continuous_scale='Teal',
+                                        hover_name="Countries",  # column to add to hover information
+                                        scope='world',
+                                        title="Number of Disasters by Country")
+
+            elif format == 'Economical Impact':
+                # Sum by countries
+                disaster_groupby = df_filter.groupby(by=["ISO", 'Countries'])["Total Damages, Adjusted ('000 US$)"].\
+                    sum().reset_index().rename(columns={'ISO': 'Country'})
+
+                # Geo map
+                fig_map = px.choropleth(disaster_groupby, locations="Country",
+                                        color="Total Damages, Adjusted ('000 US$)",
+                                        color_continuous_scale='Teal',
+                                        hover_name='Countries',  # column to add to hover information
+                                        scope='world',
+                                        title="Total Damage (USD) of Disasters by Country")
 
         # Filtering by continents
         elif selection == "Continents":
+            # Filtering by Format
+            if format == 'Frequency':
+                # Count by continents
+                disaster_groupby = df_filter.groupby(by=["Continents"]).size()\
+                    .reset_index().rename(columns={0: 'Count'})
 
-            # Count by continents
-            disaster_groupby = df_filter.groupby(by=["Continents"]).size().reset_index().rename(columns={0: 'Count'})
+                # Geo map
+                fig_map = px.choropleth(disaster_groupby,
+                                        geojson=gdf.geometry,
+                                        locations="Continents",
+                                        color="Count",  # number of disasters in each country by year,
+                                        color_continuous_scale='Teal',
+                                        hover_name="Continents",  # column to add to hover information
+                                        scope='world',
+                                        title="Number of Disasters by Continent")
 
-            # Geo map
-            fig_map = px.choropleth(disaster_groupby,
-                                    geojson=gdf.geometry,
-                                    locations="Continents",
-                                    color="Count",  # number of disasters in each country by year,
-                                    color_continuous_scale='Teal',
-                                    hover_name="Continents",  # column to add to hover information
-                                    scope='world',
-                                    title="Number of disasters by Continent")
+            elif format == 'Economical Impact':
+                # Sum by continents
+                disaster_groupby = df_filter.groupby(by=["Continents"])["Total Damages, Adjusted ('000 US$)"].\
+                    sum().reset_index()
 
-            # Update layout of map
-            fig_map.update_layout(
-                margin=dict(t=50, b=5, l=0, r=0),
-                coloraxis_showscale=False,
-                geo=dict(
-                    showframe=True,
-                    showcoastlines=True,
-                    projection_type='natural earth',
-                ),
-                coloraxis_colorbar_x=-0.3,
-            )
+                # Geo map
+                fig_map = px.choropleth(disaster_groupby,
+                                        geojson=gdf.geometry,
+                                        locations="Continents",
+                                        color="Total Damages, Adjusted ('000 US$)",
+                                        color_continuous_scale='Teal',
+                                        hover_name="Continents",  # column to add to hover information
+                                        scope='world',
+                                        title="Total Damage (USD) of Disasters by Continent")
+
+        # Update layout of map
+        fig_map.update_layout(
+            margin=dict(t=50, b=2, l=0, r=0),
+            coloraxis_showscale=False,
+            geo=dict(
+                showframe=True,
+                showcoastlines=True,
+                projection_type='natural earth',
+            ),
+            coloraxis_colorbar_x=-0.3,
+        )
 
         return fig_map
 
@@ -201,41 +223,52 @@ def register_callbacks(app, df, gdf):
         Output('Time_series', 'figure'),
         Input('Geo_map', 'hoverData'),
         Input('radio_items', 'value'),
-        Input('disaster_type_dropdown', 'value'))
-    def update_timeseries(hoverData, geo_type, disaster_type):
+        Input('disaster_type_dropdown', 'value'),
+        Input('geo_items_format', 'value'))
+    def update_timeseries(hoverData, geo_type, disaster_type, format):
         # Getting the location
         geo_location = hoverData['points'][0]['location']
 
         # Filtering by disaster type
         if disaster_type == 'All':
             df_filter = df.copy()
-            title = f'All Disasters in {geo_location}'
+            title = f'All Disasters in'
         else:
             df_filter = df[df["Disaster Subgroup"] == disaster_type]
-            title = f'{disaster_type} disasters in {geo_location} '
+            title = f'{disaster_type} Disasters in'
 
         # Filtering by countries or continents
         if geo_type == "Countries":
             dff = df_filter[df_filter['ISO'] == geo_location]
 
-            disasters_by_year = dff.groupby(by=["Year"]).size().reset_index()
-            disasters_by_year.columns = ["Year", "Count"]
+            country = dff.iloc[0]['Countries']
+            title = title + f' {country}'
 
         elif geo_type == "Continents":
             dff = df_filter[df_filter['Continents'] == geo_location]
+            title = title + f' {geo_location}'
 
+        # Filtering by Format
+        if format == 'Frequency':
             disasters_by_year = dff.groupby(by=["Year"]).size().reset_index()
             disasters_by_year.columns = ["Year", "Count"]
 
-        # Empty df for year range
-        min_year = int(disasters_by_year['Year'].min())
-        empty_df = pd.DataFrame(data=range(min_year, 2022), columns=['Year'])
+            # Empty df for year range
+            min_year = int(disasters_by_year['Year'].min())
+            empty_df = pd.DataFrame(data=range(min_year, 2022), columns=['Year'])
 
-        # filling the empty years
-        disasters_by_year_complete = pd.merge(left=disasters_by_year, right=empty_df, on='Year', how='right')
-        disasters_by_year_complete.fillna(0, inplace=True)
+            # filling the empty years
+            disasters_by_year_complete = pd.merge(left=disasters_by_year, right=empty_df, on='Year', how='right')
+            disasters_by_year_complete.fillna(0, inplace=True)
 
-        fig = px.line(disasters_by_year_complete, x="Year", y="Count", title=title)
+            fig = px.line(disasters_by_year_complete, x="Year", y="Count", title=title)
+        elif format == 'Economical Impact':
+            title = title + ' by Economical Impact'
+            disasters_by_economical = dff.groupby(by=["Year"])["Total Damages, Adjusted ('000 US$)"].sum().reset_index()
+            disasters_by_economical.columns = ["Year", "Total Damages, Adjusted ('000 US$) SUM"]
+
+            fig = px.line(disasters_by_economical, x="Year", y="Total Damages, Adjusted ('000 US$) SUM", title=title)
+
         fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
 
         return fig

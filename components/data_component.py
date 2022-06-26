@@ -24,6 +24,10 @@ cont = json.load(f)
 
 gdf = gpd.GeoDataFrame.from_features(cont)
 gdf = gdf.set_index("CONTINENT")
+
+# ISO reading
+iso_df = pd.read_excel(data_path + '/ISO_code.xlsx')
+iso_dict = dict(zip(iso_df['Code Value'],iso_df['Definition']))
 # ----------------------------------------------------------------------------------------------------------------------
 # Data and Plot
 # ----------------------------------------------------------------------------------------------------------------------
@@ -46,6 +50,8 @@ df_disaster["Continents"] = new_continent
 df_disaster["Continents"].replace({"Northern America": "North America", "Caribbean": "South America",
                                    "Central America": "North America"}, inplace=True)
 
+# Replacing the ISO code to name
+df_disaster['Countries'] = df_disaster['ISO'].replace(iso_dict)
 # ---------------------------------------------------------
 # Disaster by subgroup
 # Checking how many records we have per year

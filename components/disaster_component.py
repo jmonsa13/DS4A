@@ -53,7 +53,15 @@ def geo_plot_layout_selector():
                              value=disaster_subgroup_list[-1])
             ], width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)',
                                "margin-left": "5px"}, id='second_selector'
-        )
+        ),
+        dbc.Col(
+            [
+                html.P("Select a format:", style={'font-weight': 'bold'}),
+                dcc.Dropdown(id='geo_items_format', options=['Frequency', 'Economical Impact'],
+                             value='Frequency')
+            ],
+            width=3, style={'backgroundColor': 'rgba(211, 211, 211, 0.4)', "margin-left": "10px"},
+        ),
     ]
 
     return layout
