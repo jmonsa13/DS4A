@@ -46,7 +46,7 @@ layout = dbc.Container(
                         ),
                         dbc.Col(
                             [
-                                dcc.Dropdown(options=['Time-Series', 'Geo-type'],
+                                dcc.Dropdown(options=['Time-Series', 'Geo-Type', 'Animation-Plot'],
                                              value='Time-Series',
                                              style={'height': '10px'},
                                              id='analisis_type'

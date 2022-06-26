@@ -15,15 +15,17 @@ from components.data_component import *
 # ----------------------------------------------------------------------------------------------------------------------
 # Function to redirect the type of container to use
 def disaster_analisis(analisis_type):
-    if analisis_type == 'Geo-type':
+    if analisis_type == 'Geo-Type':
         return geo_plot_layout()
     elif analisis_type == 'Time-Series':
         return time_series_plot_layout()
+    elif analisis_type == 'Animation-Plot':
+        return animation_disas_plot_layout()
 
 
 # Function to change the filter
 def disaster_analisis_selector(analisis_type):
-    if analisis_type == 'Geo-type':
+    if analisis_type == 'Geo-Type':
         return geo_plot_layout_selector()
     elif analisis_type == 'Time-Series':
         return timeseries_layout_selector()
@@ -126,5 +128,28 @@ def timeseries_layout_selector():
 def time_series_plot_layout():
     # Main plot
     layout = dbc.Col(dcc.Graph(id='Total_disaster', figure=fig0), width=12)
+
+    return layout
+
+# Animation_disaster_plot_layout
+def animation_disas_plot_layout():
+    # Filtering
+    disaster_subgroup_df = (df_disaster.groupby(by=["Year", "Disaster Subgroup", "Disaster Type"]).agg(
+        {'ISO': 'count', 'Total Deaths': 'sum'}).reset_index()
+                            .rename(columns={'ISO': 'Number of disasters'})
+                            )
+    disaster_subgroup_df["Total Deaths"] = np.log(disaster_subgroup_df["Total Deaths"] + 1)
+    # print(Disaster_subgroup_df)
+
+    fig = px.scatter(disaster_subgroup_df, x="Number of disasters", y="Total Deaths", animation_frame="Year",
+                     animation_group="Disaster Type",
+                     color="Disaster Subgroup", size="Total Deaths", size_max=30, range_y=[0, 20], range_x=[0, 250],
+                     hover_name="Disaster Type",
+                     title="Log(Total Deaths) vs Number of Disaster by Year,type and Subtype of Disaster"
+                     )
+    fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 1000
+
+    # Main plot
+    layout = dbc.Col(dcc.Graph(id='Animation_disaster', figure=fig), width=12)
 
     return layout
