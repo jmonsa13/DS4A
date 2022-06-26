@@ -53,15 +53,6 @@ df_disaster["Continents"].replace({"Northern America": "North America", "Caribbe
 # Replacing the ISO code to name
 df_disaster['Countries'] = df_disaster['ISO'].replace(iso_dict)
 # ---------------------------------------------------------
-# Disaster by subgroup
-# Checking how many records we have per year
-disasters_by_year_subgroup = df_disaster.groupby(by=["Year", "Disaster Subgroup"]).size().reset_index()
-disasters_by_year_subgroup.columns = ["Year", "Disaster Subgroup", "Count"]
-
-fig0 = px.line(disasters_by_year_subgroup, x="Year", y="Count", color='Disaster Subgroup', title='# Disasters by Year')
-fig0.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
-
-# ---------------------------------------------------------
 # Listing the subgroup of disasters
 disaster_subgroup_list = df_disaster["Disaster Subgroup"].unique()
 disaster_subgroup_list = np.append(disaster_subgroup_list, 'All')

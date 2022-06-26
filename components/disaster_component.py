@@ -127,7 +127,7 @@ def timeseries_layout_selector():
 # Time_series layout
 def time_series_plot_layout():
     # Main plot
-    layout = dbc.Col(dcc.Graph(id='Total_disaster', figure=fig0), width=12)
+    layout = dbc.Col(dcc.Graph(id='Total_disaster'), width=12)
 
     return layout
 
