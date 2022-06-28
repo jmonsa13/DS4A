@@ -56,3 +56,13 @@ df_disaster['Countries'] = df_disaster['ISO'].replace(iso_dict)
 # Listing the subgroup of disasters
 disaster_subgroup_list = df_disaster["Disaster Subgroup"].unique()
 disaster_subgroup_list = np.append(disaster_subgroup_list, 'All')
+# ---------------------------------------------------------
+# ---------------------------------------------------------
+# Reading climate file
+# For avoiding the size limitation of github
+df_climate_0 = pd.read_csv(data_path + '/Temp_lat_lon_historical_0.csv')
+df_climate_1 = pd.read_csv(data_path + '/Temp_lat_lon_historical_1.csv')
+df_climate_2 = pd.read_csv(data_path + '/Temp_lat_lon_historical_2.csv')
+
+# Concat
+df_climate = pd.concat([df_climate_0, df_climate_1, df_climate_2])

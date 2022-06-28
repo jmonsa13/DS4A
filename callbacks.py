@@ -7,6 +7,7 @@
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from dash import Input, Output
 
 from components.disaster_component import disaster_analisis_selector, disaster_analisis
@@ -16,25 +17,26 @@ from components.disaster_component import disaster_analisis_selector, disaster_a
 # Callback
 # ----------------------------------------------------------------------------------------------------------------------
 # Main callback situation
-def register_callbacks(app, df, gdf):
+def register_callbacks(app, df, gdf, df_climate):
     """
     Function that contain all the callback of the app
     :param app: dash app
     :param df: panda dataframe containing the disasters
     :param gdf: Geo dataframe containing the Continent
+    :param df_climate: Geo dataframe containing the Continent
     :return:
     """
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Callback for changing the type of analisis (Time-series or Geoplot)
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Callback for changing the type of analisis (Time-series or Geoplot)
     @app.callback(
         Output('disaster-content', 'children'),
         Input('analisis_type', 'value'))
     def geo_timeseries_content(analisis_type):
         return disaster_analisis(analisis_type)
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Callback for changing the type of filter (Time-series or Geoplot)
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Callback for changing the type of filter (Time-series or Geoplot)
     @app.callback(
         Output('disaster-content_selector', 'children'),
         Input('analisis_type', 'value'))
@@ -73,7 +75,7 @@ def register_callbacks(app, df, gdf):
             elif select_format == 'Economical Impact':
                 # Sum total cost
                 if agg_type == 'Sum':
-                    total_damage_sum_year = df.groupby(by="Year")["Total Damages, Adjusted ('000 US$)"]\
+                    total_damage_sum_year = df.groupby(by="Year")["Total Damages, Adjusted ('000 US$)"] \
                         .sum().reset_index()
                     total_damage_sum_year.columns = ["Year", "Total Damages, Adjusted ('000 US$) SUM"]
 
@@ -83,7 +85,7 @@ def register_callbacks(app, df, gdf):
 
                 # Average total cost by year
                 elif agg_type == 'Mean':
-                    total_damage_sum_year = df.groupby(by="Year")["Total Damages, Adjusted ('000 US$)"]\
+                    total_damage_sum_year = df.groupby(by="Year")["Total Damages, Adjusted ('000 US$)"] \
                         .mean().reset_index()
                     total_damage_sum_year.columns = ["Year", "Total Damages, Adjusted ('000 US$) MEAN"]
 
@@ -127,8 +129,8 @@ def register_callbacks(app, df, gdf):
 
         return fig
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Callback for updating the geoplot of disasters
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Callback for updating the geoplot of disasters
     @app.callback(
         Output('Geo_map', 'figure'),
         Input('radio_items', 'value'),
@@ -160,7 +162,7 @@ def register_callbacks(app, df, gdf):
 
             elif format == 'Economical Impact':
                 # Sum by countries
-                disaster_groupby = df_filter.groupby(by=["ISO", 'Countries'])["Total Damages, Adjusted ('000 US$)"].\
+                disaster_groupby = df_filter.groupby(by=["ISO", 'Countries'])["Total Damages, Adjusted ('000 US$)"]. \
                     sum().reset_index().rename(columns={'ISO': 'Country'})
 
                 # Geo map
@@ -176,7 +178,7 @@ def register_callbacks(app, df, gdf):
             # Filtering by Format
             if format == 'Frequency':
                 # Count by continents
-                disaster_groupby = df_filter.groupby(by=["Continents"]).size()\
+                disaster_groupby = df_filter.groupby(by=["Continents"]).size() \
                     .reset_index().rename(columns={0: 'Count'})
 
                 # Geo map
@@ -191,7 +193,7 @@ def register_callbacks(app, df, gdf):
 
             elif format == 'Economical Impact':
                 # Sum by continents
-                disaster_groupby = df_filter.groupby(by=["Continents"])["Total Damages, Adjusted ('000 US$)"].\
+                disaster_groupby = df_filter.groupby(by=["Continents"])["Total Damages, Adjusted ('000 US$)"]. \
                     sum().reset_index()
 
                 # Geo map
@@ -218,8 +220,8 @@ def register_callbacks(app, df, gdf):
 
         return fig_map
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Callback for updating the time series of the geo map.
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Callback for updating the time series of the geo map.
     @app.callback(
         Output('Time_series', 'figure'),
         Input('Geo_map', 'hoverData'),
@@ -273,3 +275,110 @@ def register_callbacks(app, df, gdf):
         fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
 
         return fig
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Callback for updating the time series of the geo map.
+    @app.callback(
+        Output('Geo_map_climate', 'figure'),
+        Input('year_climat', 'value'),
+        Input('radio_climat', 'value'))
+    def update_climate_year(year, formato):
+        if formato == 'Absolute':
+            # Filter year
+            df_filter = df_climate[df_climate['year'] == year].copy()
+
+            # Title
+            title = f'Average Temperature of the World in {year}'
+
+            #Configuration
+            marker_conf = dict(
+                size=3,
+                color=np.round(df_filter["timeseries-tas-annual-mean"], 2),  # set color equal to a variable
+                colorscale='Thermal',  # one of plotly colorscales,
+                showscale=True,
+                colorbar=dict(title='Temperature °C'))
+
+        elif formato == 'Relative':
+            # Baseline year 1960
+            df_filter_1960 = df_climate[df_climate['year'] == 1960].copy()
+
+            # Filter year
+            df_filter = df_climate[df_climate['year'] == year].copy()
+
+            # Relative value
+            df_filter['timeseries-tas-annual-mean'] = df_filter['timeseries-tas-annual-mean'].values \
+                                                      - df_filter_1960['timeseries-tas-annual-mean'].values
+
+            # Title
+            title = f'Relative Change of Temperature on the World in {year} Compared to 1960'
+
+            #Configuration
+            marker_conf = dict(
+                size=3,
+                color=np.round(df_filter["timeseries-tas-annual-mean"], 2),  # set color equal to a variable
+                colorscale='Thermal',  # one of plotly colorscales,
+                showscale=True,
+                cmax=4,
+                cmin=-1,
+                colorbar=dict(title='Temperature °C'))
+
+        # Plotly
+        fig = go.Figure(data=go.Scattergeo(
+            lon=df_filter['lon_bnds'],
+            lat=df_filter['lat_bnds'],
+            text=np.round(df_filter["timeseries-tas-annual-mean"], 2),
+            mode='markers',
+            marker=marker_conf))
+
+        # Update layout of map
+        fig.update_layout(title=title)
+
+        # Update layout of map
+        fig.update_layout(
+            margin=dict(t=50, b=2, l=0, r=0),
+            coloraxis_showscale=False,
+            geo=dict(
+                showframe=True,
+                showcoastlines=True,
+                projection_type='natural earth',
+            ),
+            coloraxis_colorbar_x=-0.3,
+        )
+
+        return fig
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Callback for updating the time series of the geo map.
+    @app.callback(
+        [Output('Max_temp_climat', 'children'),
+         Output('Min_temp_climat', 'children'),
+         Output('Average_temp_climat', 'children')],
+        [Input('year_climat', 'value'),
+         Input('radio_climat', 'value')]
+    )
+    def update_climate_year(year, formato):
+        if formato == 'Absolute':
+            # Filter year
+            df_filter = df_climate[df_climate['year'] == year]
+
+        elif formato == 'Relative':
+            # Baseline year 1960
+            df_filter_1960 = df_climate[df_climate['year'] == 1960].copy()
+
+            # Filter year
+            df_filter = df_climate[df_climate['year'] == year].copy()
+
+            # Relative value
+            df_filter['timeseries-tas-annual-mean'] = df_filter['timeseries-tas-annual-mean'].values \
+                                                      - df_filter_1960['timeseries-tas-annual-mean'].values
+
+        # Max temp
+        maxi = np.round(df_filter['timeseries-tas-annual-mean'].max(), 2)
+
+        # Min temp
+        mini = np.round(df_filter['timeseries-tas-annual-mean'].min(), 2)
+
+        # Average temp
+        average_temp = np.round(df_filter['timeseries-tas-annual-mean'].mean(), 2)
+
+        return f'{maxi}°C', f'{mini}°C', f'{average_temp}°C'
