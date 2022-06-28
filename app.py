@@ -95,7 +95,7 @@ app.layout = dbc.Container(
 
 # Callback
 # ----------------------------------------------------------------------------------------------------------------------
-register_callbacks(app, df_disaster, gdf)
+register_callbacks(app, df_disaster, df_climate, gdf)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Running the main code
