@@ -83,7 +83,7 @@ app.layout = dbc.Container(
         ],
             id='line_header', align="center", style={'margin-bottom': '20px'}
         ),
-        # Content for diferent pages
+        # Content for different pages
         html.Div(
             children=dl.plugins.page_container,
             id='app-content'
@@ -95,7 +95,7 @@ app.layout = dbc.Container(
 
 # Callback
 # ----------------------------------------------------------------------------------------------------------------------
-register_callbacks(app, df_disaster, df_climate, gdf)
+register_callbacks(app, df_disaster, gdf, df_climate)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Running the main code
