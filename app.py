@@ -39,7 +39,7 @@ navbar = dbc.Nav(
             nav=True,
             label="Dashboard",
         ),
-        dbc.NavItem(dbc.NavLink("Analysis", href='#')),
+        dbc.NavItem(dbc.NavLink("ANALYSIS", href='#')),
         dbc.NavItem(dbc.NavLink("About Us", href="/us")),
     ], pills=True, horizontal='end',
 )
