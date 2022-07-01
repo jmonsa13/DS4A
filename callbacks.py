@@ -11,23 +11,26 @@ import plotly.graph_objects as go
 from dash import Input, Output
 
 from components.disaster_component import disaster_analisis_selector, disaster_analisis
+from components.climate_component import climate_analisis, climate_analisis_selector
+
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Callback
 # ----------------------------------------------------------------------------------------------------------------------
 # Main callback situation
-def register_callbacks(app, df, gdf, df_climate):
+def register_callbacks(app, df, gdf, df_climate, df_climate_country):
     """
     Function that contain all the callback of the app
     :param app: dash app
     :param df: panda dataframe containing the disasters
     :param gdf: Geo dataframe containing the Continent
-    :param df_climate: Geo dataframe containing the Continent
+    :param df_climate: Temperature by year and lat & lon
+    :param df_climate_country: Temperature by year, month in every countries
     :return:
     """
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for changing the type of analisis (Time-series or Geoplot)
     @app.callback(
         Output('disaster-content', 'children'),
@@ -35,7 +38,7 @@ def register_callbacks(app, df, gdf, df_climate):
     def geo_timeseries_content(analisis_type):
         return disaster_analisis(analisis_type)
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for changing the type of filter (Time-series or Geoplot)
     @app.callback(
         Output('disaster-content_selector', 'children'),
@@ -43,7 +46,7 @@ def register_callbacks(app, df, gdf, df_climate):
     def geo_timeseries_selector(analisis_type):
         return disaster_analisis_selector(analisis_type)
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for changing the type of filter (Time-series or Geoplot)
     @app.callback(
         Output('agg_function_selector', 'style'),
@@ -54,7 +57,51 @@ def register_callbacks(app, df, gdf, df_climate):
         if selection == 'Economical Impact':
             return {'display': 'block'}
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # Callback for changing the type of filter (Time-series or Geoplot)
+    @app.callback(
+        Output('agg_function_selector_climat', 'style'),
+        Input('radio_items_format_climat', 'value'))
+    def timeseries_aggfunction_selector_climat(selection):
+        if selection == 'Year':
+            return {'display': 'None'}
+        if selection == 'Month':
+            return {'display': 'block'}
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Callback for changing the type of filter (Time-series or Geoplot)
+    @app.callback(
+        Output('year_range_climat', 'style'),
+        Input('radio_items_time_climat', 'value'),
+        Input('radio_items_measure_climat', 'value'),
+        Input('radio_items_format_climat', 'value'))
+    def timeseries_aggfunction_selector_climat_static(visual, selection, formato):
+        if visual == 'Continents' or formato == 'Year':
+            return {'display': 'None'}
+        elif formato == 'Month':
+            if selection == 'Animation':
+                return {'display': 'None'}
+            if selection == 'Static':
+                return {'display': 'block'}
+
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Callback for changing the type of analisis (Time-series or Geoplot)
+    @app.callback(
+        Output('climate-content', 'children'),
+        Input('analisis_type_Climat', 'value'))
+    def geo_timeseries_content_climat(analisis_type):
+        return climate_analisis(analisis_type)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Callback for changing the type of filter (Time-series or Geoplot)
+    @app.callback(
+        Output('climate-content_selector', 'children'),
+        Input('analisis_type_Climat', 'value'))
+    def geo_timeseries_selector(analisis_type):
+        return climate_analisis_selector(analisis_type)
+
+    # ------------------------------------------------------------------------------------------------------------------
     # callback iteraction
     @app.callback(
         Output('Total_disaster', 'figure'),
@@ -282,7 +329,7 @@ def register_callbacks(app, df, gdf, df_climate):
         Output('Geo_map_climate', 'figure'),
         Input('year_climat', 'value'),
         Input('radio_climat', 'value'))
-    def update_climate_year(year, formato):
+    def update_climate_year_geo(year, formato):
         if formato == 'Absolute':
             # Filter year
             df_filter = df_climate[df_climate['year'] == year].copy()
@@ -382,3 +429,91 @@ def register_callbacks(app, df, gdf, df_climate):
         average_temp = np.round(df_filter['timeseries-tas-annual-mean'].mean(), 2)
 
         return f'{maxi}°C', f'{mini}°C', f'{average_temp}°C'
+
+    # ----------------------------------------------------------------------------------------------------------------------
+    # Callback for updating the time series of the geo map.
+    @ app.callback(
+        Output('Time_plot_climate', 'figure'),
+        Input('radio_items_time_climat', 'value'),
+        Input('radio_items_format_climat', 'value'),
+        Input('radio_items_measure_climat', 'value'),
+        Input('year_selection_climat', 'value'))
+    def update_time_climate_year(tipo, format, opcion, years):
+        # By Year
+        if format == 'Year':
+            # X label
+            x_label = 'Years'
+
+            if tipo == 'World':
+                # Grouping by year
+                temp_by_year = df_climate_country.groupby(['year'])['mean_temp'].mean().to_frame().reset_index()
+                # Range
+                y_range = [18.8, 20.5]
+
+                # Plotting year
+                fig = px.line(temp_by_year, x="year", y="mean_temp", title='Temperature by Year (1960-2020)')
+
+            elif tipo == 'Continents':
+                # Grouping by year and continents
+                temp_by_year_cont = df_climate_country.groupby(['year', 'Continent'])[
+                    'mean_temp'].mean().to_frame().reset_index()
+                # Range
+                y_range = [7, 25.5]
+
+                # Ploting
+                fig = px.line(temp_by_year_cont, x="year", y="mean_temp", color='Continent',
+                              title='Temperature by Continent (1960-2020)')
+        # By month
+        elif format == 'Month':
+            # X label
+            x_label = 'Months'
+
+            if tipo == 'World' and opcion == 'Animation':
+                # Grouping by year, month
+                temp_subgroup = (df_climate_country.groupby(by=["year", "month"]).agg(
+                    {'mean_temp': 'mean'}).reset_index())
+                # Range
+                y_range = [14, 24]
+
+                # Ploting
+                fig = px.line(temp_subgroup, x="month", y="mean_temp", animation_frame="year",
+                              title="Average Temperature each Month of Every Year")
+
+            elif tipo == 'World' and opcion == 'Static':
+                # Grouping by year, month
+                temp_subgroup = (
+                    df_climate_country.groupby(by=["year", "month"]).agg({'mean_temp': 'mean'}).reset_index()
+                    .rename(columns={'mean_Temp': 'Average of temperature'})
+                    )
+
+                # Filtering by selection
+                temp_subgroup = temp_subgroup[temp_subgroup['year'].isin(years)]
+
+                fig = px.line(temp_subgroup, x="month", y="mean_temp", color="year",
+                              title="Average temperature by month, Continent and year"
+                              )
+                # Range
+                y_range = [14, 24]
+
+                # Ploting
+                fig = px.line(temp_subgroup, x="month", y="mean_temp", color="year",
+                              title=f"Average Temperature each Month of {years}")
+
+            elif tipo == 'Continents' and opcion == 'Animation':
+                # Grouping by year, month, continents
+                temp_subgroup = (df_climate_country.groupby(by=["year", "month", 'Continent']).agg(
+                    {'mean_temp': 'mean'}).reset_index())
+                # Range
+                y_range = [-2, 28]
+
+                # Ploting
+                fig = px.line(temp_subgroup, x="month", y="mean_temp", color="Continent", animation_frame="year",
+                              title="Average Temperature each Month of Every Year by Continent ")
+
+
+        fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"], template='seaborn',
+                          xaxis_title=x_label,
+                          yaxis_title='Mean Temperature °C',
+                          yaxis_range=y_range)
+
+        return fig

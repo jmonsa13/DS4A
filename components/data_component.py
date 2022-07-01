@@ -29,7 +29,7 @@ gdf = gdf.set_index("CONTINENT")
 iso_df = pd.read_excel(data_path + '/ISO_code.xlsx')
 iso_dict = dict(zip(iso_df['Code Value'],iso_df['Definition']))
 # ----------------------------------------------------------------------------------------------------------------------
-# Data and Plot
+# Data Disaster
 # ----------------------------------------------------------------------------------------------------------------------
 # Loading the clean data file as pandas  dataframe
 filename = data_path + '/Disaster_Clean.xlsx'
@@ -66,3 +66,9 @@ df_climate_2 = pd.read_csv(data_path + '/Temp_lat_lon_historical_2.csv')
 
 # Concat
 df_climate = pd.concat([df_climate_0, df_climate_1, df_climate_2])
+# ----------------------------------------------------------------------------------------------------------------------
+# Data Climate
+# ----------------------------------------------------------------------------------------------------------------------
+# Loading the clean data file as pandas  dataframe
+filename_climat = data_path + '/temp_country.csv'
+df_climate_country = pd.read_csv(filename_climat)
