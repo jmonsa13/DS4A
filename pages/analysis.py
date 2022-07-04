@@ -8,7 +8,8 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash_labs.plugins import register_page
 
-from components.analysis_component import correlation_selector, correlation_layout, arima_selector, arima_layout
+from components.analysis_component import correlation_selector, correlation_layout, arima_selector,\
+    arima_layout, linea_selector, linea_layout
 
 # dash-labs plugin call, menu name and route
 register_page(__name__, path='/analysis')
@@ -31,6 +32,11 @@ arima_markdown = '''
 Let's use traditional time series forecast methods to predict how the frequency of disasters and the average 
 temperature around the world will behave in the future, for this we can use the **ARIMA method**. In order to apply 
 ARIMA correctly, the time series have to be stationary. Therefore, we need to difference both data sets one time.
+'''
+
+linea_markdown = '''
+Now let's use a lineal regression (OLS) to know the relation between the temperature and the frequency of disasters. 
+This can be done with the original series but having the data **Stationary** is recommended. 
 '''
 # ----------------------------------------------------------------------------------------------------------------------
 # Layout for disaster Page
@@ -118,7 +124,44 @@ layout = dbc.Container(
                         ),
             ], style={"border": "1px black solid"}
             ),
+            # Space
+            html.Br(),
+            # Arima
+            html.Div([
+                dbc.Row(
+                    [
+                        # Subtitle
+                        html.H5(children='Lineal Regression', style={"margin-left": "10px", 'margin-bottom': '20px',
+                                                         "margin-top": "10px"}),
 
+                        # Content markdown
+                        dcc.Markdown(children=linea_markdown, style={"margin-left": "10px"}),
+
+                    ]
+                ),
+                # Selections
+                dbc.Row(
+                    children=linea_selector(),
+                    style={'height': '50%', "width": "100%", "margin-top": "10px", "margin-left": "5px",
+                           "margin-bottom": "5px"}
+                ),
+
+                # Division line
+                dbc.Row(
+                    [
+                        html.Hr(
+                            style={'borderWidth': "5vh", "width": "100%", "borderColor": "#000000", "opacity": "unset"}
+                        ),
+                    ], style={"margin-left": "5px", "margin-right": "5px"}
+                ),
+
+                # Graph plots
+                dbc.Row(children=linea_layout(),
+                        id='linea_content',
+                        style={'height': '80%', "width": "100%"}
+                        ),
+            ], style={"border": "1px black solid"}
+            ),
         ],
     )
 )

@@ -626,6 +626,7 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
 
         return fig, adf_message, stationary_mess, adf_message_climat, stationary_mess_climat, correlation_mess
 
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for updating the time series of the geo map.
     @app.callback(
         Output('Arima_plot', 'figure'),
@@ -737,3 +738,51 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
                           title=title)
 
         return fig
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Callback for updating the time series of the geo map.
+    @app.callback(
+        [Output('linea_plot', 'figure'),
+         Output('lineal_equation', 'children')],
+        Input('lineal', 'value'))
+    def arima_plot(differencing,):
+        # Frequency disaster
+        df_filter = df[df['Year'] <= 2020]
+        disasters_by_year = df_filter["Year"].value_counts().to_frame().reset_index()
+        disasters_by_year.columns = ["year", "Count"]
+        disasters_by_year = disasters_by_year.sort_values(by="year", ascending=True)
+
+        # Climate change
+        temp_by_year = df_climate_country.groupby(['year'])['mean_temp'].mean().to_frame().reset_index()
+
+        if differencing == 'Zero':
+            title = "Frequency of Disasters vs Average World Temperature"
+
+        elif differencing == 'One diff':
+            title = "Diff Frequency of Disasters vs Diff Average World Temperature"
+            # Climate
+            temp_by_year['mean_temp'] = temp_by_year['mean_temp'].diff()
+            # Disaster
+            disasters_by_year['Count'] = disasters_by_year['Count'].diff()
+
+
+        # Merging data set
+        data_set = pd.merge(left=disasters_by_year, right=temp_by_year, on='year', how='left')
+
+        # Plot
+        fig = px.scatter(data_set, x="mean_temp", y="Count",
+                         title=title,
+                         opacity=0.65, trendline='ols', trendline_color_override='darkblue')
+
+        # Title and configuration
+        fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"], template='seaborn',
+                          xaxis_title='Temperature', yaxis_title='Frequency Disasters')
+
+        # OLS
+        fit_results = px.get_trendline_results(fig).px_fit_results.iloc[0]
+        #summary = fit_results.summary().__repr__()
+
+        # OLS Equation
+        equation_mess = f'Disaster = {fit_results.params[0]:2.2f} + {fit_results.params[1]:2.2f} x Temperature'
+
+        return fig, equation_mess

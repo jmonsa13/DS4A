@@ -77,7 +77,7 @@ def correlation_layout():
     ]
     return layout
 
-# Correlation layout selector
+# Arima layout selector
 def arima_selector():
     layout = [
         dbc.Col(
@@ -98,10 +98,49 @@ def arima_selector():
 
     return layout
 
-# Correlation layout
+# Arima layout
 def arima_layout():
     # Main plot
     layout = [
         dbc.Col(dcc.Graph(id='Arima_plot'), width=12),
+    ]
+    return layout
+
+# Lineal layout selector
+def linea_selector():
+    layout = [
+        dbc.Col(
+            [
+                html.P("Select a degree of differencing:", style={'font-weight': 'bold'})
+            ], width='auto', style={"margin-left": "10px"}
+        ),
+        dbc.Col(
+            [
+                dcc.Dropdown(options=['Zero', 'One diff'],
+                             value='Zero',
+                             style={'height': '10px'},
+                             id='lineal'
+                             )
+            ], width=3, style={"margin-left": "2px"}
+        ),
+        dbc.Col(
+            [
+                html.P("The lineal equation is:", style={'font-weight': 'bold'})
+            ], width='auto', style={"margin-left": "10px"}
+        ),
+        dbc.Col(
+            [
+                html.P(id='lineal_equation')
+            ], width='auto', style={"margin-left": "2px"}
+        ),
+    ]
+
+    return layout
+
+# Lineal layout
+def linea_layout():
+    # Main plot
+    layout = [
+        dbc.Col(dcc.Graph(id='linea_plot'), width=12),
     ]
     return layout
