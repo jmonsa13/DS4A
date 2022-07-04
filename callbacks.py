@@ -8,11 +8,13 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from dash import Input, Output
+
+from statsmodels.tsa import stattools
 
 from components.disaster_component import disaster_analisis_selector, disaster_analisis
 from components.climate_component import climate_analisis, climate_analisis_selector
-
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -83,7 +85,6 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
                 return {'display': 'None'}
             if selection == 'Static':
                 return {'display': 'block'}
-
 
     # ------------------------------------------------------------------------------------------------------------------
     # Callback for changing the type of analisis (Time-series or Geoplot)
@@ -176,7 +177,7 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
 
         return fig
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for updating the geoplot of disasters
     @app.callback(
         Output('Geo_map', 'figure'),
@@ -267,7 +268,9 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
 
         return fig_map
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for updating the time series of the geo map.
     @app.callback(
         Output('Time_series', 'figure'),
@@ -323,7 +326,7 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
 
         return fig
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for updating the time series of the geo map.
     @app.callback(
         Output('Geo_map_climate', 'figure'),
@@ -337,7 +340,7 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
             # Title
             title = f'Average Temperature of the World in {year}'
 
-            #Configuration
+            # Configuration
             marker_conf = dict(
                 size=3,
                 color=np.round(df_filter["timeseries-tas-annual-mean"], 2),  # set color equal to a variable
@@ -359,7 +362,7 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
             # Title
             title = f'Relative Change of Temperature on the World in {year} Compared to 1960'
 
-            #Configuration
+            # Configuration
             marker_conf = dict(
                 size=3,
                 color=np.round(df_filter["timeseries-tas-annual-mean"], 2),  # set color equal to a variable
@@ -394,7 +397,7 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
 
         return fig
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for updating the time series of the geo map.
     @app.callback(
         [Output('Max_temp_climat', 'children'),
@@ -430,9 +433,9 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
 
         return f'{maxi}°C', f'{mini}°C', f'{average_temp}°C'
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Callback for updating the time series of the geo map.
-    @ app.callback(
+    @app.callback(
         Output('Time_plot_climate', 'figure'),
         Input('radio_items_time_climat', 'value'),
         Input('radio_items_format_climat', 'value'),
@@ -483,8 +486,8 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
                 # Grouping by year, month
                 temp_subgroup = (
                     df_climate_country.groupby(by=["year", "month"]).agg({'mean_temp': 'mean'}).reset_index()
-                    .rename(columns={'mean_Temp': 'Average of temperature'})
-                    )
+                        .rename(columns={'mean_Temp': 'Average of temperature'})
+                )
 
                 # Filtering by selection
                 temp_subgroup = temp_subgroup[temp_subgroup['year'].isin(years)]
@@ -510,10 +513,115 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
                 fig = px.line(temp_subgroup, x="month", y="mean_temp", color="Continent", animation_frame="year",
                               title="Average Temperature each Month of Every Year by Continent ")
 
-
         fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"], template='seaborn',
                           xaxis_title=x_label,
                           yaxis_title='Mean Temperature °C',
                           yaxis_range=y_range)
 
         return fig
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # Callback for updating the time series of the geo map.
+    @app.callback(
+        [Output('Correlation_plot', 'figure'),
+         Output('adf_test_disaster', 'children'),
+         Output('stationary_disaster', 'children'),
+         Output('adf_test_climate', 'children'),
+         Output('stationary_climate', 'children'),
+         Output('correlation_message', 'children')],
+        Input('differencing', 'value'),
+        Input('disaster_type_correlation', 'value'))
+    def correlation_plot(differencing, disaster_type, ):
+        # Dataframes
+        # Climate change
+        temp_by_year = df_climate_country.groupby(['year'])['mean_temp'].mean().to_frame().reset_index()
+
+        # Disaster
+        # filtering by type of disasters
+        if disaster_type == 'All':
+            df_filter = df[df['Year'] <= 2020]
+        else:
+            df_filter1 = df[df['Year'] <= 2020]
+            df_filter = df_filter1[df_filter1["Disaster Subgroup"] == disaster_type]
+
+        # Frequency disaster
+        disasters_by_year_aux = df_filter["Year"].value_counts().to_frame().reset_index()
+        disasters_by_year_aux.columns = ["Year", "Count"]
+        disasters_by_year_aux = disasters_by_year_aux.sort_values(by="Year", ascending=True)
+
+        # filling the empty years
+        empty_df = pd.DataFrame(data=range(1960, 2021), columns=['Year'])
+        disasters_by_year = pd.merge(left=disasters_by_year_aux, right=empty_df, on='Year', how='right')
+        disasters_by_year.fillna(0.001, inplace=True)
+
+        if differencing == 'Zero':
+            title = f'{disaster_type} Disaster and World Temperature'
+        elif differencing == 'One diff + log(disaster)':
+            # Climate
+            temp_by_year['mean_temp'] = temp_by_year['mean_temp'].diff()
+            # Disaster
+            disasters_by_year['Count'] = np.log(disasters_by_year['Count']) \
+                                         - np.log(disasters_by_year['Count']).shift(1)
+
+            title = f'1 Diff on log Number {disaster_type} Disaster and ' \
+                    f'1 Diff World Temperature'
+
+        # Plot
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        # Disaster
+        fig.add_trace(go.Scatter(x=disasters_by_year['Year'], y=disasters_by_year['Count'],
+                                 mode='lines',
+                                 name=f'{disaster_type} Disaster'),
+                      secondary_y=False)
+
+        # Climate change
+        fig.add_trace(go.Scatter(x=temp_by_year['year'], y=temp_by_year['mean_temp'],
+                                 mode='lines',
+                                 name='Avg Temperature'),
+                      secondary_y=True)
+
+        # Set y-axes titles
+        fig.update_yaxes(title_text="Disaster Frequency", secondary_y=False)
+        fig.update_yaxes(title_text="Average Temperature °C", secondary_y=True)
+
+        fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"], template='seaborn',
+                          xaxis_title='Year',
+                          title=title)
+
+        # Horizontal legend
+        fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+
+        # --------------------------------------------------------------------------------------------------------------
+        # ADF-test disaster
+        result = stattools.adfuller(disasters_by_year['Count'].dropna(), autolag='AIC')
+        adf_message = f'p-value: {result[1]:9.2f} '
+
+        # Checking hypothesis
+        if result[1] < 0.05:
+            stationary_mess = "Reject Ho - Time Series is Stationary"
+        else:
+            stationary_mess = "Failed to Reject Ho - Time Series is Non-Stationary"
+
+        # ADF-test climat
+        result_climat = stattools.adfuller(temp_by_year['mean_temp'].dropna(), autolag='AIC')
+        adf_message_climat = f'p-value: {result_climat[1]:9.2f} '
+
+        # Checking hypothesis
+        if result_climat[1] < 0.05:
+            stationary_mess_climat = "Reject Ho - Time Series is Stationary"
+        else:
+            stationary_mess_climat = "Failed to Reject Ho - Time Series is Non-Stationary"
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Correlation
+        series_disaster = disasters_by_year['Count'].dropna().reset_index()['Count']
+        # correlation = series_disaster.corr(temp_by_year['mean_temp'].dropna())
+        print(len(series_disaster))
+
+        # Cross-Correlation
+        correlation = stattools.ccf(temp_by_year['mean_temp'].dropna().values, series_disaster.values)
+        correlation_mess = f'The correlation is {correlation[0]:9.3f}'
+
+        return fig, adf_message, stationary_mess, adf_message_climat, stationary_mess_climat, correlation_mess
