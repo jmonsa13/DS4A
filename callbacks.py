@@ -12,6 +12,7 @@ from plotly.subplots import make_subplots
 from dash import Input, Output
 
 from statsmodels.tsa import stattools
+from statsmodels.tsa.arima.model import ARIMA
 
 from components.disaster_component import disaster_analisis_selector, disaster_analisis
 from components.climate_component import climate_analisis, climate_analisis_selector
@@ -618,10 +619,121 @@ def register_callbacks(app, df, gdf, df_climate, df_climate_country):
         # Correlation
         series_disaster = disasters_by_year['Count'].dropna().reset_index()['Count']
         # correlation = series_disaster.corr(temp_by_year['mean_temp'].dropna())
-        print(len(series_disaster))
 
         # Cross-Correlation
         correlation = stattools.ccf(temp_by_year['mean_temp'].dropna().values, series_disaster.values)
         correlation_mess = f'The correlation is {correlation[0]:9.3f}'
 
         return fig, adf_message, stationary_mess, adf_message_climat, stationary_mess_climat, correlation_mess
+
+    # Callback for updating the time series of the geo map.
+    @app.callback(
+        Output('Arima_plot', 'figure'),
+        Input('Arima_select', 'value'))
+    def arima_plot(dataset,):
+
+        # Disasters
+        if dataset == 'Disasters':
+            title = 'Disaster Forecast using ARIMA'
+            ylabel = "Disaster Frequency"
+
+            # Frequency disaster
+            df_filter = df[df['Year'] <= 2020]
+            disasters_by_year = df_filter["Year"].value_counts().to_frame().reset_index()
+            disasters_by_year.columns = ["Year", "Count"]
+            disasters_by_year = disasters_by_year.sort_values(by="Year", ascending=True)
+
+            # Setting index
+            disasters_by_year["date"] = pd.to_datetime(disasters_by_year["Year"], format="%Y")
+            disasters_by_year.set_index("date", inplace=True)
+
+            # ----------------------------------------------------------------------------------------------------------
+            # Create Training and Test
+            serie_a_predecir = disasters_by_year['Count']
+            serie_a_predecir.index.freq = 'AS'
+            y_index = serie_a_predecir.index
+
+        elif dataset == 'World Temperature':
+            title = 'Average World Temperature Forecast using ARIMA'
+            ylabel = "Temperature °C"
+
+            # Climate change
+            temp_by_year = df_climate_country.groupby(['year'])['mean_temp'].mean().to_frame().reset_index()
+
+            # Setting index
+            temp_by_year["date"] = pd.to_datetime(temp_by_year["year"], format="%Y")
+            temp_by_year.set_index("date", inplace=True)
+
+            # ----------------------------------------------------------------------------------------------------------
+            # Create Training and Test
+            serie_a_predecir = temp_by_year['mean_temp']
+            serie_a_predecir.index.freq = 'AS'
+            y_index = serie_a_predecir.index
+
+        # --------------------------------------------------------------------------------------------------------------
+        # 90% split
+        size_train = int(len(y_index) * 0.9)
+
+        train = serie_a_predecir[y_index[:size_train]]
+        test = serie_a_predecir[y_index[size_train:len(y_index)]]
+
+        # Arima Model
+        if dataset == 'Disasters':
+            model = ARIMA(train, order=(1, 2, 2))
+            lower = "lower Count"
+            upper = "upper Count"
+        elif dataset == 'World Temperature':
+            model = ARIMA(train, order=(2, 1, 2))
+            lower = "lower mean_temp"
+            upper = "upper mean_temp"
+
+        # Fit model
+        model_fit = model.fit()
+
+        # Forecast
+        forecast = model_fit.get_forecast(len(y_index) - size_train + 5)  # 95% conf
+        forecast_series = forecast.predicted_mean
+        forecast_conf_int = forecast.conf_int(alpha=0.05)
+
+        # ----------------------------------------------------------------------------------------------------------
+        # Plot
+        fig = go.Figure()
+        # Disaster
+        fig.add_trace(go.Scatter(x=train.index, y=train,
+                                 mode='lines',
+                                 name='Training')
+                      )
+        fig.add_trace(go.Scatter(x=test.index, y=test,
+                                 mode='lines',
+                                 name='Actual')
+                      )
+        # Prediction
+        fig.add_trace(go.Scatter(x=forecast_series.index, y=forecast_series,
+                                 mode='lines',
+                                 name='Prediction')
+                      )
+
+        # noinspection PyTypeChecker
+        fig.add_trace(go.Scatter(x=forecast_conf_int.index, y=forecast_conf_int[lower],
+                                 mode="lines",
+                                 showlegend=False,
+                                 line_color='rgba(255,127,0,0.0)',
+                                 name='Lower_level'))
+
+        # noinspection PyTypeChecker
+        fig.add_trace(go.Scatter(x=forecast_conf_int.index, y=forecast_conf_int[upper],
+                                 fill='tonexty', mode="lines",
+                                 fillcolor='rgba(255,127,0, 0.2)',
+                                 line_color='rgba(255,127,0,0)',
+                                 showlegend=False,
+                                 name='Upper_Level'))
+
+        # Set y-axes titles
+        fig.update_yaxes(title_text=ylabel)
+
+        # Title and configuration
+        fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"], template='seaborn',
+                          xaxis_title='Year',
+                          title=title)
+
+        return fig

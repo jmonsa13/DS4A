@@ -76,3 +76,32 @@ def correlation_layout():
         )
     ]
     return layout
+
+# Correlation layout selector
+def arima_selector():
+    layout = [
+        dbc.Col(
+            [
+                html.P("Select a time series:", style={'font-weight': 'bold'})
+            ], width='auto', style={"margin-left": "10px"}
+        ),
+        dbc.Col(
+            [
+                dcc.Dropdown(options=['Disasters', 'World Temperature'],
+                             value='Disasters',
+                             style={'height': '10px'},
+                             id='Arima_select'
+                             )
+            ], width=3, style={"margin-left": "2px"}
+        ),
+    ]
+
+    return layout
+
+# Correlation layout
+def arima_layout():
+    # Main plot
+    layout = [
+        dbc.Col(dcc.Graph(id='Arima_plot'), width=12),
+    ]
+    return layout
