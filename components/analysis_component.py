@@ -77,6 +77,7 @@ def correlation_layout():
     ]
     return layout
 
+
 # Arima layout selector
 def arima_selector():
     layout = [
@@ -98,6 +99,7 @@ def arima_selector():
 
     return layout
 
+
 # Arima layout
 def arima_layout():
     # Main plot
@@ -105,6 +107,7 @@ def arima_layout():
         dbc.Col(dcc.Graph(id='Arima_plot'), width=12),
     ]
     return layout
+
 
 # Lineal layout selector
 def linea_selector():
@@ -136,6 +139,7 @@ def linea_selector():
     ]
 
     return layout
+
 
 # Lineal layout
 def linea_layout():

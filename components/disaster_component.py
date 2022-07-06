@@ -136,18 +136,21 @@ def animation_disas_plot_layout():
     # Filtering
     disaster_subgroup_df = (df_disaster.groupby(by=["Year", "Disaster Subgroup", "Disaster Type"]).agg(
         {'ISO': 'count', 'Total Deaths': 'sum'}).reset_index()
-                            .rename(columns={'ISO': 'Number of disasters'})
+                            .rename(columns={'ISO': 'Number of Disasters'})
                             )
     disaster_subgroup_df["Total Deaths"] = np.log(disaster_subgroup_df["Total Deaths"] + 1)
-    # print(Disaster_subgroup_df)
 
-    fig = px.scatter(disaster_subgroup_df, x="Number of disasters", y="Total Deaths", animation_frame="Year",
+    # Adding a minimum value to make visibly the legen
+    disaster_subgroup_df.at[0, 'Total Deaths'] = 0.001
+
+    fig = px.scatter(disaster_subgroup_df, x="Number of Disasters", y="Total Deaths", animation_frame="Year",
                      animation_group="Disaster Type",
                      color="Disaster Subgroup", size="Total Deaths", size_max=30, range_y=[0, 20], range_x=[0, 250],
                      hover_name="Disaster Type",
-                     title="Log(Total Deaths) vs Number of Disaster by Year,type and Subtype of Disaster"
+                     title="Log(Total Deaths) vs Number of Disaster by Year,type and Subtype of Disaster",
                      )
     fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 1000
+    fig.layout.update(showlegend=True)
 
     # Main plot
     layout = dbc.Col(dcc.Graph(id='Animation_disaster', figure=fig), width=12)

@@ -61,13 +61,13 @@ layout = dbc.Container(
                         # Content markdown
                         dcc.Markdown(children=correlation_markdown, style={"margin-left": "10px"}),
 
-                    ]
+                    ], style={"margin-left": "5px", "margin-right": "10px"}
                 ),
                 # Selections
                 dbc.Row(
                     children=correlation_selector(),
                     style={'height': '50%', "width": "100%", "margin-top": "10px", "margin-left": "5px",
-                           "margin-bottom": "5px"}
+                           "margin-right": "5px", "margin-bottom": "5px"}
                 ),
 
                 # Division line
@@ -76,13 +76,13 @@ layout = dbc.Container(
                         html.Hr(
                             style={'borderWidth': "5vh", "width": "100%", "borderColor": "#000000", "opacity": "unset"}
                         ),
-                    ], style={"margin-left": "5px", "margin-right": "5px"}
+                    ], style={"margin-left": "5px", "margin-right": "10px"}
                 ),
 
                 # Graph plots
                 dbc.Row(children=correlation_layout(),
                         id='correlation_content',
-                        style={'height': '80%', "width": "100%"}
+                        style={'height': '80%', "width": "100%", "margin-right": "5px"}
                         ),
             ], style={"border": "1px black solid"}
             ),
@@ -99,13 +99,13 @@ layout = dbc.Container(
                         # Content markdown
                         dcc.Markdown(children=arima_markdown, style={"margin-left": "10px"}),
 
-                    ]
+                    ], style={"margin-left": "5px", "margin-right": "10px"}
                 ),
                 # Selections
                 dbc.Row(
                     children=arima_selector(),
                     style={'height': '50%', "width": "100%", "margin-top": "10px", "margin-left": "5px",
-                           "margin-bottom": "5px"}
+                           "margin-right": "5px", "margin-bottom": "5px"}
                 ),
 
                 # Division line
@@ -120,7 +120,7 @@ layout = dbc.Container(
                 # Graph plots
                 dbc.Row(children=arima_layout(),
                         id='arima_content',
-                        style={'height': '80%', "width": "100%"}
+                        style={'height': '80%', "width": "100%", "margin-right": "5px"}
                         ),
             ], style={"border": "1px black solid"}
             ),
@@ -132,18 +132,18 @@ layout = dbc.Container(
                     [
                         # Subtitle
                         html.H5(children='Lineal Regression', style={"margin-left": "10px", 'margin-bottom': '20px',
-                                                         "margin-top": "10px"}),
+                                                                     "margin-top": "10px"}),
 
                         # Content markdown
                         dcc.Markdown(children=linea_markdown, style={"margin-left": "10px"}),
 
-                    ]
+                    ],  style={"margin-left": "5px", "margin-right": "10px"}
                 ),
                 # Selections
                 dbc.Row(
                     children=linea_selector(),
                     style={'height': '50%', "width": "100%", "margin-top": "10px", "margin-left": "5px",
-                           "margin-bottom": "5px"}
+                           "margin-right": "5px", "margin-bottom": "5px"}
                 ),
 
                 # Division line

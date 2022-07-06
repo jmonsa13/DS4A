@@ -66,13 +66,12 @@ even if the contents of his studies don't relate to his career knowledge.
 '''
 
 christian = '''
-**[Christian Fuertes](www.linkedin.com/in/christian-fuertes-4b10301b7)** is a Physiscs and Biology student in Los
- Andes University,
- with basic knowledge of Python, Java and C++, currently learning about data science, with the purpose of applying it 
- to his future professional career, as it supposes an incredibly useful and required tool nowadays, that expands one's 
- capabilities at the time of investigation in pure sciences, for example in astrophysical or microbiological
-  research. He likes to play sports, listen to music, investigate about diverse topics, play the piano, and go 
-  hiking or walk through natural landscapes.
+**[Christian Fuertes](https://www.linkedin.com/in/christian-fuertes-4b10301b7)** is a Physiscs and Biology student in 
+Los Andes University, with basic knowledge of Python, Java and C++, currently learning about data science,
+ with the purpose of applying it to his future professional career, as it supposes an incredibly useful and 
+ required tool nowadays, that expands one's capabilities at the time of investigation in pure sciences, for example 
+ in astrophysical or microbiological research. He likes to play sports, listen to music, investigate about 
+ diverse topics, play the piano, and go hiking or walk through natural landscapes.
 '''
 # ----------------------------------------------------------------------------------------------------------------------
 # Layout
