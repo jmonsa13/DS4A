@@ -17,9 +17,12 @@ to prepare for future events.
 A common amulet, Udjat - the Eye of Horus - is a protective symbol against danger. We chose this symbol as a manner
 to represent an all seeing, protective eye looking out for natural disasters. This is what we want for our WebApp to be,
 a tool to create awareness about the impact of natural disasters  and how these are related to the climate change.
+The app can be access using the following link [Udjat APP](http://44.203.180.168:8050/) 
+
+<img  alt="image info" height="511" src="./assets/Udjat_app_ex.PNG" width="697"/>
 
 ### About us
 <img  alt="image info" height="511" src="./assets/Team_40.PNG" width="697"/>
-We are Team 40, a ....
+.
 
 
